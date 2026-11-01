@@ -4,7 +4,7 @@
 # computer without it. The same steps as The Firmware Hub's shared workflow (zvenson/fm1-build, the one release.yml
 # uses) and tools/hub_build.sh, without the signing and the release.
 #   push to the branch ableton-note, or Actions > build-note > Run workflow (the version, e.g. 0.28-note1)
-# The result: the run's artifact "choralroot-note" with choralroot-VERSION.fwsc (the standard package, both cores),
+# The result: the run's artifact "choralroot-note", and the same files on the branch "firmware": choralroot-VERSION.fwsc (the standard package, both cores),
 # choralroot-VERSION-1core.fwsc (the single-core fallback, docs/DUALCORE.md), their apps, SHA256SUMS and the licences.
 # Install with tools/fm1_install.py (README "From the command line"); the web installer offers only its own releases.
 name: build-note
@@ -21,7 +21,7 @@ on:
         type: string
 
 permissions:
-  contents: read
+  contents: write                 # the branch "firmware" (below)
 
 concurrency:
   group: build-note-${{ github.ref }}
@@ -72,3 +72,19 @@ jobs:
           name: choralroot-note
           path: build/release-${{ env.VERSION }}/
           if-no-files-found: error
+
+      - name: The packages on the branch "firmware" (downloadable from the repository's page, and by git)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          out="$(mktemp -d)"
+          cp -r "build/release-$VERSION/." "$out/"
+          cd "$out"
+          git init -q -b firmware
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "ChoralRoot $VERSION: the packages build-note made from ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" firmware:refs/heads/firmware
+          ls -l
