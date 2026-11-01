@@ -1,0 +1,1674 @@
+{
+ "format": "fm1-panel-design",
+ "version": 1,
+ "device": "M-VAVE FM-1",
+ "name": "ChoralRoot FM-1 QUAD engine mockups",
+ "palette": "MOD",
+ "labels": {
+  "buttons": {
+   "FX": "FX",
+   "SEL": "KEY",
+   "ENV": "BASS",
+   "LFO": "LATCH",
+   "EDIT": "EDIT",
+   "GLO": "OPT",
+   "HOME": "HOME",
+   "SAVE": "SAVE",
+   "ARP": "PERF",
+   "SEQ": "SEQ",
+   "PLAY": "LOOP",
+   "REC": "REC",
+   "OCT-": "OCT-",
+   "OCT+": "OCT+"
+  },
+  "encoders": {
+   "MASTER": "VOLUME",
+   "SELECT": "BPM",
+   "PRESETS": "SOUND",
+   "ALGORITHM": "BASS SND",
+   "KNOB1": "VOICING",
+   "KNOB2": "BASS VOICE",
+   "KNOB3": "PERFORM",
+   "KNOB4": "FX"
+  }
+ },
+ "notes": "QUAD, a Digitone-style four-operator FM engine (docs/QUAD.md), the user's page layout: SYN1 under the algorithm diagram with numbers for the ratios (B a fraction) and glyphs for Harm and Dtune (1), the ratio offsets (2), the operator envelopes A and B under a two-envelope band (3), their delays / trigs / resets (4), the multimode filter with its envelope (5), the base-width filter (6), the amp envelope (7), the three LFOs (8), the preset pool (9), the key scaling A / B1 / B2 (10).",
+ "states": [
+  {
+   "name": "1 \u00b7 QUAD \u00b7 OSC 1: the SYN1 page under the algorithm diagram",
+   "notes": "The Digitone's SYN1 page, one for one: row A Algo (a big number) \u00b7 Ratio C \u00b7 Ratio A \u00b7 Ratio B (one knob over the pair, drawn as the fraction B2 over B1: a detent steps B2, the fast hand on top, wrapping into B1; OPT / Shift held steps B1, the bottom), row B Harm (its wave glyph, -26..+26) \u00b7 Dtune (two beating waves) \u00b7 Feedback (a bar) \u00b7 Mix (bipolar, -64..+63, X to Y). Ratios are numbers, no bars: C and B step 0.25 below 1 and 1 above, A in 0.25 steps. The band draws the algorithm as the Digitone manual's diagram does (a direct carrier's line dotted, an enveloped one solid) and redraws as Algo turns. These eight are the EDIT macros.",
+   "export": true,
+   "keys": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "keyLabels": {
+    "1": "DIM",
+    "3": "MIN",
+    "5": "MAJ",
+    "8": "SUS",
+    "0": "6",
+    "2": "m7",
+    "4": "M7",
+    "7": "9",
+    "6": "LOCK"
+   },
+   "keyNotes": {},
+   "buttons": {
+    "FX": 2,
+    "SEL": 1,
+    "ENV": 1,
+    "LFO": 1,
+    "EDIT": 3,
+    "GLO": 1,
+    "HOME": 1,
+    "SAVE": 1,
+    "ARP": 1,
+    "SEQ": 1,
+    "PLAY": 1,
+    "REC": 1,
+    "OCT-": 1,
+    "OCT+": 1
+   },
+   "playGreen": 0,
+   "buttonLabels": {
+    "FX": "OSC",
+    "SEL": "FILT",
+    "ENV": "ENV",
+    "LFO": "LFO",
+    "EDIT": "EDIT",
+    "GLO": "SHIFT",
+    "HOME": "HOME",
+    "SAVE": "SAVE",
+    "ARP": "PERF",
+    "SEQ": "MOD",
+    "PLAY": "FX",
+    "REC": "MIX"
+   },
+   "buttonNotes": {},
+   "encoders": {
+    "MASTER": {
+     "note": "",
+     "value": ""
+    },
+    "SELECT": {
+     "note": "SYN 1",
+     "value": "A"
+    },
+    "PRESETS": {
+     "note": "",
+     "value": ""
+    },
+    "ALGORITHM": {
+     "note": "",
+     "value": ""
+    },
+    "KNOB1": {
+     "note": "ALGO",
+     "value": "3"
+    },
+    "KNOB2": {
+     "note": "RATIO C",
+     "value": "1.00"
+    },
+    "KNOB3": {
+     "note": "RATIO A",
+     "value": "2.00"
+    },
+    "KNOB4": {
+     "note": "RATIO B",
+     "value": "0.50/1.00"
+    }
+   },
+   "screen": {
+    "header": null,
+    "cards": null,
+    "panel": {
+     "kind": "edit8",
+     "title": "GLASS EP",
+     "right": "SYN 1 \u00b7 A",
+     "wide": {
+      "type": "algo",
+      "algo": 3,
+      "fdbk": 0.3,
+      "mix": 0.6
+     },
+     "rows": [
+      [
+       {
+        "label": "Algo",
+        "value": "3",
+        "big": true
+       },
+       {
+        "label": "Ratio C",
+        "value": "1.00",
+        "big": true
+       },
+       {
+        "label": "Ratio A",
+        "value": "2.00",
+        "big": true
+       },
+       {
+        "label": "Ratio B",
+        "value": "0.50/1.00",
+        "glyph": "ratio"
+       }
+      ],
+      [
+       {
+        "label": "Harm",
+        "value": "+8",
+        "glyph": "harm",
+        "pct": 0.654
+       },
+       {
+        "label": "Dtune",
+        "value": "40",
+        "glyph": "detune",
+        "pct": 0.315
+       },
+       {
+        "label": "Feedback",
+        "value": "40",
+        "glyph": "bar",
+        "pct": 0.315
+       },
+       {
+        "label": "Mix",
+        "value": "+12",
+        "pct": 0.594,
+        "bipolar": true
+       }
+      ]
+     ],
+     "active": 0,
+     "hot": null
+    },
+    "footer": null,
+    "note": "SYN1: the diagram (the manual's algorithm 3); Algo and the ratios as numbers, B a fraction B2/B1; harm and detune glyphs."
+   }
+  },
+  {
+   "name": "2 \u00b7 QUAD \u00b7 OSC 2: the ratio offsets of C, A, B1, B2",
+   "notes": "OSC's second screen is one row: the fine ratio offsets of the four operators (-1.00..+1.00), numbers.",
+   "export": true,
+   "keys": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "keyLabels": {
+    "1": "DIM",
+    "3": "MIN",
+    "5": "MAJ",
+    "8": "SUS",
+    "0": "6",
+    "2": "m7",
+    "4": "M7",
+    "7": "9",
+    "6": "LOCK"
+   },
+   "keyNotes": {},
+   "buttons": {
+    "FX": 2,
+    "SEL": 1,
+    "ENV": 1,
+    "LFO": 1,
+    "EDIT": 3,
+    "GLO": 1,
+    "HOME": 1,
+    "SAVE": 1,
+    "ARP": 1,
+    "SEQ": 1,
+    "PLAY": 1,
+    "REC": 1,
+    "OCT-": 1,
+    "OCT+": 1
+   },
+   "playGreen": 0,
+   "buttonLabels": {
+    "FX": "OSC",
+    "SEL": "FILT",
+    "ENV": "ENV",
+    "LFO": "LFO",
+    "EDIT": "EDIT",
+    "GLO": "SHIFT",
+    "HOME": "HOME",
+    "SAVE": "SAVE",
+    "ARP": "PERF",
+    "SEQ": "MOD",
+    "PLAY": "FX",
+    "REC": "MIX"
+   },
+   "buttonNotes": {},
+   "encoders": {
+    "MASTER": {
+     "note": "",
+     "value": ""
+    },
+    "SELECT": {
+     "note": "SYN 2",
+     "value": ""
+    },
+    "PRESETS": {
+     "note": "",
+     "value": ""
+    },
+    "ALGORITHM": {
+     "note": "",
+     "value": ""
+    },
+    "KNOB1": {
+     "note": "OFFSET C",
+     "value": "+0.00"
+    },
+    "KNOB2": {
+     "note": "OFFSET A",
+     "value": "+0.00"
+    },
+    "KNOB3": {
+     "note": "OFFSET B1",
+     "value": "+0.00"
+    },
+    "KNOB4": {
+     "note": "OFFSET B2",
+     "value": "+0.01"
+    }
+   },
+   "screen": {
+    "header": null,
+    "cards": null,
+    "panel": {
+     "kind": "edit8",
+     "title": "GLASS EP",
+     "right": "SYN 2",
+     "wide": null,
+     "rows": [
+      [
+       {
+        "label": "Offset C",
+        "value": "+0.00"
+       },
+       {
+        "label": "Offset A",
+        "value": "+0.00"
+       },
+       {
+        "label": "Offset B1",
+        "value": "+0.00"
+       },
+       {
+        "label": "Offset B2",
+        "value": "+0.01"
+       }
+      ]
+     ],
+     "active": 0,
+     "hot": null
+    },
+    "footer": null,
+    "note": "the ratio offsets, one row of numbers."
+   }
+  },
+  {
+   "name": "3 \u00b7 QUAD \u00b7 ENV 1: the operator envelopes A and B",
+   "notes": "The operators' envelopes on one screen: row A is envelope A (Attack \u00b7 Decay \u00b7 End \u00b7 Level), row B envelope B. The band draws both: A's curve at the left, B's at the right, each a rise to its Level and a fall to its End, then the hold, with a level bar at its side. The segment being turned is thick in its knob's colour.",
+   "export": true,
+   "keys": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "keyLabels": {
+    "1": "DIM",
+    "3": "MIN",
+    "5": "MAJ",
+    "8": "SUS",
+    "0": "6",
+    "2": "m7",
+    "4": "M7",
+    "7": "9",
+    "6": "LOCK"
+   },
+   "keyNotes": {},
+   "buttons": {
+    "FX": 1,
+    "SEL": 1,
+    "ENV": 2,
+    "LFO": 1,
+    "EDIT": 3,
+    "GLO": 1,
+    "HOME": 1,
+    "SAVE": 1,
+    "ARP": 1,
+    "SEQ": 1,
+    "PLAY": 1,
+    "REC": 1,
+    "OCT-": 1,
+    "OCT+": 1
+   },
+   "playGreen": 0,
+   "buttonLabels": {
+    "FX": "OSC",
+    "SEL": "FILT",
+    "ENV": "ENV",
+    "LFO": "LFO",
+    "EDIT": "EDIT",
+    "GLO": "SHIFT",
+    "HOME": "HOME",
+    "SAVE": "SAVE",
+    "ARP": "PERF",
+    "SEQ": "MOD",
+    "PLAY": "FX",
+    "REC": "MIX"
+   },
+   "buttonNotes": {},
+   "encoders": {
+    "MASTER": {
+     "note": "",
+     "value": ""
+    },
+    "SELECT": {
+     "note": "ENV",
+     "value": "A"
+    },
+    "PRESETS": {
+     "note": "",
+     "value": ""
+    },
+    "ALGORITHM": {
+     "note": "",
+     "value": ""
+    },
+    "KNOB1": {
+     "note": "A ATTACK",
+     "value": "12"
+    },
+    "KNOB2": {
+     "note": "A DECAY",
+     "value": "60"
+    },
+    "KNOB3": {
+     "note": "A END",
+     "value": "20"
+    },
+    "KNOB4": {
+     "note": "A LEVEL",
+     "value": "90"
+    }
+   },
+   "screen": {
+    "header": null,
+    "cards": null,
+    "panel": {
+     "kind": "edit8",
+     "title": "GLASS EP",
+     "right": "ENV A/B",
+     "wide": {
+      "type": "ade2",
+      "a": {
+       "a": 0.1,
+       "d": 0.47,
+       "end": 0.16,
+       "lev": 0.71
+      },
+      "b": {
+       "a": 0.0,
+       "d": 0.63,
+       "end": 0.0,
+       "lev": 0.55
+      },
+      "seg": 1
+     },
+     "rows": [
+      [
+       {
+        "label": "A Attack",
+        "value": "12",
+        "pct": 0.1
+       },
+       {
+        "label": "A Decay",
+        "value": "60",
+        "pct": 0.47
+       },
+       {
+        "label": "A End",
+        "value": "20",
+        "pct": 0.16
+       },
+       {
+        "label": "A Level",
+        "value": "90",
+        "pct": 0.71
+       }
+      ],
+      [
+       {
+        "label": "B Attack",
+        "value": "0",
+        "pct": 0.0
+       },
+       {
+        "label": "B Decay",
+        "value": "80",
+        "pct": 0.63
+       },
+       {
+        "label": "B End",
+        "value": "0",
+        "pct": 0.0
+       },
+       {
+        "label": "B Level",
+        "value": "70",
+        "pct": 0.55
+       }
+      ]
+     ],
+     "active": 0,
+     "hot": null
+    },
+    "footer": null,
+    "note": "both operator envelopes with their level bars; A's decay thick (KNOB 2)."
+   }
+  },
+  {
+   "name": "4 \u00b7 QUAD \u00b7 ENV 2: delays, trig modes, resets",
+   "notes": "Row A: A Delay \u00b7 A Trig \u00b7 A Reset \u00b7 Phase reset; row B: B Delay \u00b7 B Trig \u00b7 B Reset. Trig is the envelope's trigger mode (every note / legato holds), Reset whether it restarts from zero, Phase reset (PHRT) which operators restart their phase at note-on: Off \u00b7 All \u00b7 C \u00b7 A+B \u00b7 A+B2.",
+   "export": true,
+   "keys": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "keyLabels": {
+    "1": "DIM",
+    "3": "MIN",
+    "5": "MAJ",
+    "8": "SUS",
+    "0": "6",
+    "2": "m7",
+    "4": "M7",
+    "7": "9",
+    "6": "LOCK"
+   },
+   "keyNotes": {},
+   "buttons": {
+    "FX": 1,
+    "SEL": 1,
+    "ENV": 2,
+    "LFO": 1,
+    "EDIT": 3,
+    "GLO": 1,
+    "HOME": 1,
+    "SAVE": 1,
+    "ARP": 1,
+    "SEQ": 1,
+    "PLAY": 1,
+    "REC": 1,
+    "OCT-": 1,
+    "OCT+": 1
+   },
+   "playGreen": 0,
+   "buttonLabels": {
+    "FX": "OSC",
+    "SEL": "FILT",
+    "ENV": "ENV",
+    "LFO": "LFO",
+    "EDIT": "EDIT",
+    "GLO": "SHIFT",
+    "HOME": "HOME",
+    "SAVE": "SAVE",
+    "ARP": "PERF",
+    "SEQ": "MOD",
+    "PLAY": "FX",
+    "REC": "MIX"
+   },
+   "buttonNotes": {},
+   "encoders": {
+    "MASTER": {
+     "note": "",
+     "value": ""
+    },
+    "SELECT": {
+     "note": "ENV",
+     "value": "2"
+    },
+    "PRESETS": {
+     "note": "",
+     "value": ""
+    },
+    "ALGORITHM": {
+     "note": "",
+     "value": ""
+    },
+    "KNOB1": {
+     "note": "A DELAY",
+     "value": "0"
+    },
+    "KNOB2": {
+     "note": "A TRIG",
+     "value": "ON"
+    },
+    "KNOB3": {
+     "note": "A RESET",
+     "value": "ON"
+    },
+    "KNOB4": {
+     "note": "PHRT",
+     "value": "ALL"
+    }
+   },
+   "screen": {
+    "header": null,
+    "cards": null,
+    "panel": {
+     "kind": "edit8",
+     "title": "GLASS EP",
+     "right": "ENV 2",
+     "wide": null,
+     "rows": [
+      [
+       {
+        "label": "A Delay",
+        "value": "0",
+        "pct": 0.0
+       },
+       {
+        "label": "A Trig",
+        "value": "On"
+       },
+       {
+        "label": "A Reset",
+        "value": "On"
+       },
+       {
+        "label": "Phase",
+        "value": "All"
+       }
+      ],
+      [
+       {
+        "label": "B Delay",
+        "value": "0",
+        "pct": 0.0
+       },
+       {
+        "label": "B Trig",
+        "value": "On"
+       },
+       {
+        "label": "B Reset",
+        "value": "Off"
+       },
+       null
+      ]
+     ],
+     "active": 0,
+     "hot": null
+    },
+    "footer": null,
+    "note": "the envelopes' delays, trig modes and resets; phase reset (PHRT) a text cell."
+   }
+  },
+  {
+   "name": "5 \u00b7 QUAD \u00b7 FILT 1: the multimode filter and its envelope",
+   "notes": "The filter page: row A the filter envelope (Attack \u00b7 Decay \u00b7 Sustain \u00b7 Release), row B the filter (Freq \u00b7 Reso \u00b7 Type Off / LP12 / HP12 / LP24 \u00b7 Env depth), under the response band the VA's filter screen uses (Off a flat line, LP24 twice LP12's slope). The base-width filter now comes before it in the voice. Row B is on the knobs here.",
+   "export": true,
+   "keys": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "keyLabels": {
+    "1": "DIM",
+    "3": "MIN",
+    "5": "MAJ",
+    "8": "SUS",
+    "0": "6",
+    "2": "m7",
+    "4": "M7",
+    "7": "9",
+    "6": "LOCK"
+   },
+   "keyNotes": {},
+   "buttons": {
+    "FX": 1,
+    "SEL": 2,
+    "ENV": 1,
+    "LFO": 1,
+    "EDIT": 3,
+    "GLO": 1,
+    "HOME": 1,
+    "SAVE": 1,
+    "ARP": 1,
+    "SEQ": 1,
+    "PLAY": 1,
+    "REC": 1,
+    "OCT-": 1,
+    "OCT+": 1
+   },
+   "playGreen": 0,
+   "buttonLabels": {
+    "FX": "OSC",
+    "SEL": "FILT",
+    "ENV": "ENV",
+    "LFO": "LFO",
+    "EDIT": "EDIT",
+    "GLO": "SHIFT",
+    "HOME": "HOME",
+    "SAVE": "SAVE",
+    "ARP": "PERF",
+    "SEQ": "MOD",
+    "PLAY": "FX",
+    "REC": "MIX"
+   },
+   "buttonNotes": {},
+   "encoders": {
+    "MASTER": {
+     "note": "",
+     "value": ""
+    },
+    "SELECT": {
+     "note": "FILTER",
+     "value": "B"
+    },
+    "PRESETS": {
+     "note": "",
+     "value": ""
+    },
+    "ALGORITHM": {
+     "note": "",
+     "value": ""
+    },
+    "KNOB1": {
+     "note": "FREQ",
+     "value": "2.1k"
+    },
+    "KNOB2": {
+     "note": "RESO",
+     "value": "30"
+    },
+    "KNOB3": {
+     "note": "TYPE",
+     "value": "LP12"
+    },
+    "KNOB4": {
+     "note": "ENV DEPTH",
+     "value": "+24"
+    }
+   },
+   "screen": {
+    "header": null,
+    "cards": null,
+    "panel": {
+     "kind": "edit8",
+     "title": "GLASS EP",
+     "right": "FILTER \u00b7 B",
+     "wide": {
+      "type": "filter",
+      "cut": 0.677,
+      "res": 0.24,
+      "ftype": "LP12",
+      "drive": 0.0
+     },
+     "rows": [
+      [
+       {
+        "label": "Attack",
+        "value": "10",
+        "pct": 0.08
+       },
+       {
+        "label": "Decay",
+        "value": "50",
+        "pct": 0.4
+       },
+       {
+        "label": "Sustain",
+        "value": "60",
+        "pct": 0.47
+       },
+       {
+        "label": "Release",
+        "value": "40",
+        "pct": 0.31
+       }
+      ],
+      [
+       {
+        "label": "Freq",
+        "value": "2.1k",
+        "pct": 0.6
+       },
+       {
+        "label": "Reso",
+        "value": "30",
+        "pct": 0.24
+       },
+       {
+        "label": "Type",
+        "value": "LP12"
+       },
+       {
+        "label": "Env depth",
+        "value": "+24",
+        "pct": 0.69,
+        "bipolar": true
+       }
+      ]
+     ],
+     "active": 1,
+     "hot": null
+    },
+    "footer": null,
+    "note": "the multimode filter with its own envelope; the response band."
+   }
+  },
+  {
+   "name": "6 \u00b7 QUAD \u00b7 FILT 2: envelope delay, key track, the base-width filter",
+   "notes": "The filter's second screen: row A Env delay \u00b7 Key track; row B the base-width filter: Base (its low edge) and Width (how far above it the window reaches), drawn on the band as a lit window between two dashed edges over the multimode response.",
+   "export": true,
+   "keys": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "keyLabels": {
+    "1": "DIM",
+    "3": "MIN",
+    "5": "MAJ",
+    "8": "SUS",
+    "0": "6",
+    "2": "m7",
+    "4": "M7",
+    "7": "9",
+    "6": "LOCK"
+   },
+   "keyNotes": {},
+   "buttons": {
+    "FX": 1,
+    "SEL": 2,
+    "ENV": 1,
+    "LFO": 1,
+    "EDIT": 3,
+    "GLO": 1,
+    "HOME": 1,
+    "SAVE": 1,
+    "ARP": 1,
+    "SEQ": 1,
+    "PLAY": 1,
+    "REC": 1,
+    "OCT-": 1,
+    "OCT+": 1
+   },
+   "playGreen": 0,
+   "buttonLabels": {
+    "FX": "OSC",
+    "SEL": "FILT",
+    "ENV": "ENV",
+    "LFO": "LFO",
+    "EDIT": "EDIT",
+    "GLO": "SHIFT",
+    "HOME": "HOME",
+    "SAVE": "SAVE",
+    "ARP": "PERF",
+    "SEQ": "MOD",
+    "PLAY": "FX",
+    "REC": "MIX"
+   },
+   "buttonNotes": {},
+   "encoders": {
+    "MASTER": {
+     "note": "",
+     "value": ""
+    },
+    "SELECT": {
+     "note": "FILTER 2",
+     "value": "B"
+    },
+    "PRESETS": {
+     "note": "",
+     "value": ""
+    },
+    "ALGORITHM": {
+     "note": "",
+     "value": ""
+    },
+    "KNOB1": {
+     "note": "BASE",
+     "value": "20"
+    },
+    "KNOB2": {
+     "note": "WIDTH",
+     "value": "90"
+    },
+    "KNOB3": {
+     "note": "",
+     "value": ""
+    },
+    "KNOB4": {
+     "note": "",
+     "value": ""
+    }
+   },
+   "screen": {
+    "header": null,
+    "cards": null,
+    "panel": {
+     "kind": "edit8",
+     "title": "GLASS EP",
+     "right": "FILTER 2 \u00b7 B",
+     "wide": {
+      "type": "filter",
+      "cut": 0.677,
+      "res": 0.24,
+      "ftype": "LP12",
+      "drive": 0.0,
+      "bw": {
+       "base": 0.16,
+       "width": 0.71
+      }
+     },
+     "rows": [
+      [
+       {
+        "label": "Env delay",
+        "value": "0",
+        "pct": 0.0
+       },
+       {
+        "label": "Key track",
+        "value": "50",
+        "pct": 0.39
+       },
+       null,
+       null
+      ],
+      [
+       {
+        "label": "Base",
+        "value": "20",
+        "pct": 0.16
+       },
+       {
+        "label": "Width",
+        "value": "90",
+        "pct": 0.71
+       },
+       null,
+       null
+      ]
+     ],
+     "active": 1,
+     "hot": null
+    },
+    "footer": null,
+    "note": "the base-width window over the response."
+   }
+  },
+  {
+   "name": "7 \u00b7 QUAD \u00b7 AMP: the master envelope",
+   "notes": "The amp page: Attack \u00b7 Decay \u00b7 Sustain \u00b7 Release under the AHDSR band (QUAD's own amp envelope, as the Digitone's AMP page), row B Level \u00b7 Pan \u00b7 Drive (the platform's DIST).",
+   "export": true,
+   "keys": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "keyLabels": {
+    "1": "DIM",
+    "3": "MIN",
+    "5": "MAJ",
+    "8": "SUS",
+    "0": "6",
+    "2": "m7",
+    "4": "M7",
+    "7": "9",
+    "6": "LOCK"
+   },
+   "keyNotes": {},
+   "buttons": {
+    "FX": 1,
+    "SEL": 1,
+    "ENV": 2,
+    "LFO": 1,
+    "EDIT": 3,
+    "GLO": 1,
+    "HOME": 1,
+    "SAVE": 1,
+    "ARP": 1,
+    "SEQ": 1,
+    "PLAY": 1,
+    "REC": 1,
+    "OCT-": 1,
+    "OCT+": 1
+   },
+   "playGreen": 0,
+   "buttonLabels": {
+    "FX": "OSC",
+    "SEL": "FILT",
+    "ENV": "ENV",
+    "LFO": "LFO",
+    "EDIT": "EDIT",
+    "GLO": "SHIFT",
+    "HOME": "HOME",
+    "SAVE": "SAVE",
+    "ARP": "PERF",
+    "SEQ": "MOD",
+    "PLAY": "FX",
+    "REC": "MIX"
+   },
+   "buttonNotes": {},
+   "encoders": {
+    "MASTER": {
+     "note": "",
+     "value": ""
+    },
+    "SELECT": {
+     "note": "AMP",
+     "value": "A"
+    },
+    "PRESETS": {
+     "note": "",
+     "value": ""
+    },
+    "ALGORITHM": {
+     "note": "",
+     "value": ""
+    },
+    "KNOB1": {
+     "note": "ATTACK",
+     "value": "5"
+    },
+    "KNOB2": {
+     "note": "DECAY",
+     "value": "40"
+    },
+    "KNOB3": {
+     "note": "SUSTAIN",
+     "value": "80"
+    },
+    "KNOB4": {
+     "note": "RELEASE",
+     "value": "35"
+    }
+   },
+   "screen": {
+    "header": null,
+    "cards": null,
+    "panel": {
+     "kind": "edit8",
+     "title": "GLASS EP",
+     "right": "AMP \u00b7 A",
+     "wide": {
+      "type": "env",
+      "a": 0.04,
+      "h": 0.0,
+      "d": 0.31,
+      "s": 0.63,
+      "r": 0.28,
+      "seg": 0
+     },
+     "rows": [
+      [
+       {
+        "label": "Attack",
+        "value": "5",
+        "pct": 0.04
+       },
+       {
+        "label": "Decay",
+        "value": "40",
+        "pct": 0.31
+       },
+       {
+        "label": "Sustain",
+        "value": "80",
+        "pct": 0.63
+       },
+       {
+        "label": "Release",
+        "value": "35",
+        "pct": 0.28
+       }
+      ],
+      [
+       {
+        "label": "Level",
+        "value": "100",
+        "pct": 0.79
+       },
+       {
+        "label": "Pan",
+        "value": "0",
+        "pct": 0.5,
+        "bipolar": true
+       },
+       {
+        "label": "Drive",
+        "value": "0",
+        "pct": 0.0
+       },
+       null
+      ]
+     ],
+     "active": 0,
+     "hot": null
+    },
+    "footer": null,
+    "note": "the amp envelope under the AHDSR band."
+   }
+  },
+  {
+   "name": "8 \u00b7 QUAD \u00b7 LFO 1 (LFO 2 and LFO 3 the same, a screen each)",
+   "notes": "Three LFOs, a screen each (the Digitone's): Speed (a bipolar knob, -64..+63, centre detent; negative runs backwards) \u00b7 Multiplier (1 2 4 .. 1k 2k synced to the tempo, F1 .. F2k at a fixed 120 BPM) \u00b7 Fade (bipolar, -64..+63: below 0 the LFO fades in, above it fades out) \u00b7 Dest (an enum over FM TONE's parameters: Pitch, Algo, the ratios and offsets, Harm, Dtune, Fdbk, Mix, the operator envelopes, the filter, the amp envelope, Level, Pan) / Wave + Start phase as one double-width cell (the chosen wave drawn shifted by the phase: turning the phase slides the shape; KNOB 1 picks the wave, KNOB 2 the phase) \u00b7 Trig mode (free / trig / hold / one / half) \u00b7 Depth.",
+   "export": true,
+   "keys": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "keyLabels": {
+    "1": "DIM",
+    "3": "MIN",
+    "5": "MAJ",
+    "8": "SUS",
+    "0": "6",
+    "2": "m7",
+    "4": "M7",
+    "7": "9",
+    "6": "LOCK"
+   },
+   "keyNotes": {},
+   "buttons": {
+    "FX": 1,
+    "SEL": 1,
+    "ENV": 1,
+    "LFO": 2,
+    "EDIT": 3,
+    "GLO": 1,
+    "HOME": 1,
+    "SAVE": 1,
+    "ARP": 1,
+    "SEQ": 1,
+    "PLAY": 1,
+    "REC": 1,
+    "OCT-": 1,
+    "OCT+": 1
+   },
+   "playGreen": 0,
+   "buttonLabels": {
+    "FX": "OSC",
+    "SEL": "FILT",
+    "ENV": "ENV",
+    "LFO": "LFO",
+    "EDIT": "EDIT",
+    "GLO": "SHIFT",
+    "HOME": "HOME",
+    "SAVE": "SAVE",
+    "ARP": "PERF",
+    "SEQ": "MOD",
+    "PLAY": "FX",
+    "REC": "MIX"
+   },
+   "buttonNotes": {},
+   "encoders": {
+    "MASTER": {
+     "note": "",
+     "value": ""
+    },
+    "SELECT": {
+     "note": "LFO",
+     "value": "1"
+    },
+    "PRESETS": {
+     "note": "",
+     "value": ""
+    },
+    "ALGORITHM": {
+     "note": "",
+     "value": ""
+    },
+    "KNOB1": {
+     "note": "SPEED",
+     "value": "+24"
+    },
+    "KNOB2": {
+     "note": "MULT",
+     "value": "16"
+    },
+    "KNOB3": {
+     "note": "FADE",
+     "value": "-20"
+    },
+    "KNOB4": {
+     "note": "DEST",
+     "value": "HARM"
+    }
+   },
+   "screen": {
+    "header": null,
+    "cards": null,
+    "panel": {
+     "kind": "edit8",
+     "title": "GLASS EP",
+     "right": "LFO 1 \u00b7 A",
+     "wide": null,
+     "rows": [
+      [
+       {
+        "label": "Speed",
+        "value": "+24",
+        "glyph": "knob",
+        "pct": 0.688,
+        "bipolar": true
+       },
+       {
+        "label": "Mult",
+        "value": "16"
+       },
+       {
+        "label": "Fade",
+        "value": "-20",
+        "pct": 0.343,
+        "bipolar": true
+       },
+       {
+        "label": "Dest",
+        "value": "Harm"
+       }
+      ],
+      [
+       {
+        "label": "Wave \u00b7 Phase",
+        "value": "Tri \u00b7 90",
+        "glyph": "lfowave",
+        "pct": 0.25,
+        "wave": "tri",
+        "span": 2
+       },
+       {
+        "label": "Trig",
+        "value": "Free"
+       },
+       {
+        "label": "Depth",
+        "value": "+30",
+        "pct": 0.738,
+        "bipolar": true
+       }
+      ]
+     ],
+     "active": 0,
+     "hot": null
+    },
+    "footer": null,
+    "note": "LFO 1: the speed knob, the multiplier, the bipolar fade, the wave + phase double cell."
+   }
+  },
+  {
+   "name": "9 \u00b7 PRESETS on QUAD: the pool",
+   "notes": "QUAD in the preset model: PRESETS turns inside its pool (00 INIT, the factory presets, yours); OPT + PRESETS reaches QUAD between FM6 and VA.",
+   "export": true,
+   "keys": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "keyLabels": {
+    "1": "DIM",
+    "3": "MIN",
+    "5": "MAJ",
+    "8": "SUS",
+    "0": "6",
+    "2": "m7",
+    "4": "M7",
+    "7": "9",
+    "6": "LOCK"
+   },
+   "keyNotes": {},
+   "buttons": {
+    "FX": 1,
+    "SEL": 1,
+    "ENV": 1,
+    "LFO": 1,
+    "EDIT": 1,
+    "GLO": 1,
+    "HOME": 1,
+    "SAVE": 1,
+    "ARP": 1,
+    "SEQ": 1,
+    "PLAY": 1,
+    "REC": 1,
+    "OCT-": 1,
+    "OCT+": 1
+   },
+   "playGreen": 0,
+   "buttonLabels": {},
+   "buttonNotes": {},
+   "encoders": {
+    "MASTER": {
+     "note": "",
+     "value": ""
+    },
+    "SELECT": {
+     "note": "",
+     "value": ""
+    },
+    "PRESETS": {
+     "note": "SOUND",
+     "value": "03"
+    },
+    "ALGORITHM": {
+     "note": "",
+     "value": ""
+    },
+    "KNOB1": {
+     "note": "",
+     "value": "0"
+    },
+    "KNOB2": {
+     "note": "",
+     "value": "0"
+    },
+    "KNOB3": {
+     "note": "",
+     "value": "off"
+    },
+    "KNOB4": {
+     "note": "",
+     "value": "25"
+    }
+   },
+   "screen": {
+    "header": {
+     "icon": "none",
+     "bpm": "",
+     "mid": "",
+     "right": "",
+     "batt": false,
+     "usb": false
+    },
+    "cards": null,
+    "panel": {
+     "kind": "meter",
+     "value": "03",
+     "sub": "GLASS EP",
+     "label": "QUAD \u00b7 03/16",
+     "col": "white",
+     "pct": 0.1875,
+     "segments": 16
+    },
+    "footer": null,
+    "note": "PRESETS on QUAD."
+   }
+  },
+  {
+   "name": "10 \u00b7 QUAD \u00b7 ENV 3: key scaling of A, B1, B2",
+   "notes": "The operators' key scaling, one row of three: A Key \u00b7 B1 Key \u00b7 B2 Key (0..127: how much the operator's level falls as the note rises, the Digitone's A / B1 / B2 key tracking), numbers with bars.",
+   "export": true,
+   "keys": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "keyLabels": {
+    "1": "DIM",
+    "3": "MIN",
+    "5": "MAJ",
+    "8": "SUS",
+    "0": "6",
+    "2": "m7",
+    "4": "M7",
+    "7": "9",
+    "6": "LOCK"
+   },
+   "keyNotes": {},
+   "buttons": {
+    "FX": 1,
+    "SEL": 1,
+    "ENV": 2,
+    "LFO": 1,
+    "EDIT": 3,
+    "GLO": 1,
+    "HOME": 1,
+    "SAVE": 1,
+    "ARP": 1,
+    "SEQ": 1,
+    "PLAY": 1,
+    "REC": 1,
+    "OCT-": 1,
+    "OCT+": 1
+   },
+   "playGreen": 0,
+   "buttonLabels": {
+    "FX": "OSC",
+    "SEL": "FILT",
+    "ENV": "ENV",
+    "LFO": "LFO",
+    "EDIT": "EDIT",
+    "GLO": "SHIFT",
+    "HOME": "HOME",
+    "SAVE": "SAVE",
+    "ARP": "PERF",
+    "SEQ": "MOD",
+    "PLAY": "FX",
+    "REC": "MIX"
+   },
+   "buttonNotes": {},
+   "encoders": {
+    "MASTER": {
+     "note": "",
+     "value": ""
+    },
+    "SELECT": {
+     "note": "ENV 3",
+     "value": ""
+    },
+    "PRESETS": {
+     "note": "",
+     "value": ""
+    },
+    "ALGORITHM": {
+     "note": "",
+     "value": ""
+    },
+    "KNOB1": {
+     "note": "A KEY",
+     "value": "0"
+    },
+    "KNOB2": {
+     "note": "B1 KEY",
+     "value": "40"
+    },
+    "KNOB3": {
+     "note": "B2 KEY",
+     "value": "20"
+    },
+    "KNOB4": {
+     "note": "",
+     "value": ""
+    }
+   },
+   "screen": {
+    "header": null,
+    "cards": null,
+    "panel": {
+     "kind": "edit8",
+     "title": "GLASS EP",
+     "right": "ENV 3",
+     "wide": null,
+     "rows": [
+      [
+       {
+        "label": "A Key",
+        "value": "0",
+        "pct": 0.0
+       },
+       {
+        "label": "B1 Key",
+        "value": "40",
+        "pct": 0.315
+       },
+       {
+        "label": "B2 Key",
+        "value": "20",
+        "pct": 0.157
+       },
+       null
+      ]
+     ],
+     "active": 0,
+     "hot": null
+    },
+    "footer": null,
+    "note": "the key scaling: three cells."
+   }
+  }
+ ]
+}

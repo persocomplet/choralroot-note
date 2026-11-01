@@ -1,0 +1,142 @@
+# The screenshots of docs/MANUAL.md, from the emulator (the firmware's own drawing code):
+#   sh tools/emu/build.sh
+#   SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy build/host/emu --headless --no-midi --script docs/manual/shots.txt
+# Run from the repository root; it writes docs/manual/*.png (240 x 240, the LCD's size).
+wait 2000
+
+# chord.png: MIN and m7 held, D4 pressed (the CHORD view)
+btn G#3 down
+btn G3 down
+btn D4 down
+wait 500
+shot docs/manual/chord.png
+btn D4 up
+btn G3 up
+btn G#3 up
+wait 400
+
+# sound-popup.png: PRESETS one detent (the place in the engine's pool)
+knob PRESETS +1
+wait 400
+shot docs/manual/sound-popup.png
+wait 1500
+
+# layer-fx-sends.png: FX held past the hold time (the layer stays; OCT- closes it): its first page, the sends
+btn FX 600
+wait 400
+shot docs/manual/layer-fx-sends.png
+# layer-fx.png: SELECT +1: the reverb's first page
+knob SELECT +1
+wait 500
+shot docs/manual/layer-fx.png
+# layer-fx-delay.png: SELECT +3: the delay's first page (then back, for the shots below)
+knob SELECT +3
+wait 500
+shot docs/manual/layer-fx-delay.png
+knob SELECT -4
+wait 300
+btn OCT-
+wait 400
+
+# layer-key.png: KEY (printed SEL) held, then MIN + E4: E minor
+btn SEL 600
+wait 300
+btn G#3 down
+wait 50
+btn E4
+wait 50
+btn G#3 up
+wait 400
+shot docs/manual/layer-key.png
+btn SEL
+wait 200
+btn OCT-
+wait 400
+
+# play-menu.png: LOOP (printed PLAY) held, nothing recorded yet
+btn PLAY 600
+wait 400
+shot docs/manual/play-menu.png
+btn OCT-
+wait 400
+
+# options.png: OPT (printed GLO) tapped
+btn GLO
+wait 400
+shot docs/manual/options.png
+btn GLO
+wait 400
+
+# editor-osc.png, editor-filter.png: OPT + PRESETS to the VA, EDIT, then FILT (printed SEL)
+btn GLO down
+wait 100
+knob PRESETS +2
+wait 200
+btn GLO up
+wait 1500
+btn EDIT
+wait 400
+shot docs/manual/editor-osc.png
+btn SEL
+wait 400
+shot docs/manual/editor-filter.png
+btn HOME
+wait 300
+
+# loop-editor.png: the PLAY menu, Step mode, three chords entered (D, Em, G: Length Free), EDIT: the loop editor, its
+# page 1 (Step); KNOB 2 +13: 16 steps; PRESETS +1: step 2; MIN + A4: Am in it; KNOB 1 +3: its note 4 steps long.
+# loop-editor-trig.png: SELECT +1: page 2 (Trig); KNOB 1 +1: ratchet x2; KNOB 2 +1: condition 1:2; ALGORITHM +15: voicing +2
+btn PLAY 600
+wait 400
+knob ALGORITHM +4
+wait 300
+btn REC
+wait 300
+btn A#3 down
+btn D4 down
+wait 200
+btn D4 up
+btn A#3 up
+wait 300
+btn G#3 down
+btn E4 down
+wait 200
+btn E4 up
+btn G#3 up
+wait 300
+btn A#3 down
+btn G4 down
+wait 200
+btn G4 up
+btn A#3 up
+wait 300
+btn REC
+wait 1500
+btn EDIT
+wait 400
+knob KNOB2 +13
+wait 300
+knob PRESETS +1
+wait 300
+btn G#3 down
+btn A4 down
+wait 300
+btn A4 up
+btn G#3 up
+wait 400
+knob KNOB1 +3
+wait 1350
+shot docs/manual/loop-editor.png
+knob SELECT +1
+wait 300
+knob KNOB1 +1
+wait 200
+knob KNOB2 +1
+wait 200
+knob ALGORITHM +15
+wait 1350
+shot docs/manual/loop-editor-trig.png
+btn EDIT
+wait 300
+btn OCT-
+wait 300

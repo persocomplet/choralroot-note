@@ -1,0 +1,15 @@
+# test_persist.sh, LOCK styles run 1: B3 held: the LOCK layer; KNOB 1 +1: Type key Keeps; KNOB 2 +1: Ext keys Pushed
+# (Settings v13, bits 6 / 7 of loop_rec); OCT-; the record saved past the quiet time; quit
+keys classic                  # (0.25.1: FM-1 is the default; this script was written for the Classic chord keys)
+wait 500
+btn B3 600
+wait 300
+knob KNOB1 +1
+wait 200
+knob KNOB2 +1
+wait 200
+btn OCT-
+btn SAVE 900                  # SAVE held: the global save (the manual settings are written by it alone, 0.18)
+wait 3000
+dump
+quit

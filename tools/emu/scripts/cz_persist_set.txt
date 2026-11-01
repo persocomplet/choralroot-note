@@ -1,0 +1,34 @@
+# test_persist.sh, CZ-1 run 1: OPT + PRESETS +4: the CZ-1, 01 BRASS 1 (Casio's A-1); EDIT, ENV four times: DCW 1, SELECT +1: its
+# levels, KNOB 1 -22: L1 to 0 (99: one, one, then five a detent); HOME; SAVE, OCT+ (U01): the trace "cz: save slot 1 part 0 tone crc XXXX"; the settings
+# record saved past the quiet time; quit
+wait 300                      # (+ 200 ms of the engine change below: the same timeline)
+btn GLO down
+wait 100
+knob PRESETS +3               # OPT + PRESETS: the engine (FM6 -> FM TONE -> VA -> CZ-1, BRASS 1: its pool position 01), on OPT's release
+wait 100
+btn GLO up
+wait 600
+btn EDIT
+wait 400
+btn ENV
+wait 300
+btn ENV
+wait 300
+btn ENV
+wait 300
+btn ENV
+wait 400
+knob SELECT +1
+wait 250
+knob KNOB1 -22
+wait 300
+btn HOME
+wait 400
+btn SAVE
+wait 400
+btn OCT+
+wait 1500
+btn SAVE 900                  # SAVE held: the global save: U01 is the power-on sound (the chord part's sound is a manual setting, 0.18)
+wait 3500
+dump
+quit

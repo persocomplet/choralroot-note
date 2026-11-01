@@ -1,0 +1,18 @@
+# tools/emu/perf.sh (k), the global save: a chord held 1.5 s on TINE EP and let go, then KNOB 1 +2 (the voicing: a session change) and SAVE held: the global save, a new unit's first: the settings and the session written (0.18: saving is manual)
+# Nothing is captured in the background any more (until 2026-10-11 the session was captured every 200 ms and written
+# after the quiet time). The save: one sector erase an object, 45 ms of the audio ISR held each (16 blocks of silence).
+wait 300
+key F3 down
+wait 40
+btn D4 down
+wait 1500
+btn D4 up
+key F3 up
+wait 3000
+dump                          # 1: nothing saved
+knob KNOB1 +2
+wait 2000
+btn SAVE 900
+wait 2100
+dump                          # 2: saved: the settings and the session once each
+quit

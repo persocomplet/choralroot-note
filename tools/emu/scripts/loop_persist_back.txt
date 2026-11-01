@@ -1,0 +1,10 @@
+# a loop_persist_*.txt flash file relaunched (test_persist.sh): the slot's SAVED loop is in RAM at power-on, stopped
+# (dump 1), and LOOP plays it (dump 2).
+wait 300
+dump                          # 1: power-on
+btn PLAY
+wait 1500
+expect sound
+dump                          # 2: it plays
+btn PLAY
+wait 500

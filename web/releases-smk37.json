@@ -1,0 +1,236 @@
+{
+  "about": "The SMK-37 test builds the SMK-37 test installer (webapp/smk37/, not linked from the site) offers, newest first. Each version lists its three models' packages (choralroot-X.Y-smk37[-elite|-mke][-1core].fwsc, tools/build.py BOARD=smk37 --release X.Y-smk37) with their sha256, from the release's SHA256SUMS: web/make_site.py refuses a package that does not match, and the page checks it again in the browser before any write. The FM-1's list is web/releases.json; this one never goes there. Adding a version: BUILDING.md, 'An SMK-37 test release'. tests/releases_test.py checks this file.",
+  "repo": "https://github.com/Quixotic7/ChoralRootFM1",
+  "releases": [
+    {
+      "version": "0.27-smk37.1",
+      "base": "0.27",
+      "date": "2026-10-29",
+      "tag": "v0.27-smk37.1",
+      "title": "0.27-smk37 with the pedal jack: sustain or expression",
+      "bullets": [
+        "The SMK-37's pedal jack works: Options > Pedal picks Sustain (the default) or Expression.",
+        "Sustain: a switch pedal holds the notes of the keys and pads on both parts until it comes up, and sends CC 64 on the CHORD and BASS channels. Pedals of either polarity work: plug yours in before switching on.",
+        "Expression: an expression pedal sets both parts' level (CC 11, also sent out). Sweep it heel to toe once after plugging it in so it learns the range.",
+        "Everything else as 0.27-smk37."
+      ],
+      "notes": [
+        "Community-tested, not tested by the maintainer: the pedal has not been tried on a unit. Please report what your pedal does (SMK37.md, What to test, item 13) on GitHub.",
+        "Updating from 0.27-smk37 keeps your settings, sounds, loops and favourites. Going back to 0.27-smk37 works too (it ignores the Pedal setting)."
+      ],
+      "packages": {
+        "pro": {
+          "sha256": "573c2b0d9f1f197e39dcae99738fd4c544474e698fcffdfa5073944062a10327",
+          "sha256_1core": "3bc5a4cbc5fcc172060eaec64e517486e05a6d3cf0ac2d297749f20a09425930"
+        },
+        "elite": {
+          "sha256": "a0ce234446fcc710df00234f8bc0b3baf409b25b7e0c603a12cf000f6c4c78da",
+          "sha256_1core": "29b5d1c15250ece9d88effcccdd306b8cb7379353c0de4eaa925c862779c63db"
+        },
+        "mke": {
+          "sha256": "6d7150015f6c8ebe5cf5a130d95fb9cdaac65f70cf00406c873bfa7515e224d4",
+          "sha256_1core": "b88a1d2a8ad4b55269d7c49cf174f138b378816e27567c7c965bd3be2da5512c"
+        }
+      }
+    },
+    {
+      "version": "0.27-smk37",
+      "base": "0.27",
+      "date": "2026-10-25",
+      "tag": "v0.27-smk37",
+      "title": "ChoralRoot 0.27 on the SMK-37: FX routing, the volume on K1 shown and remembered",
+      "bullets": [
+        "ChoralRoot 0.27 on the M-Vave SMK-37 Pro, SMK-37 Elite, MKE-P37 and Starrykey 37 Play, with everything of 0.26-smk37.",
+        "A Routing page in the FX layer draws the chorus, delay, reverb and master filter as boxes on a wire. Hold a black key of the keybed (C#4 Chorus, D#4 Delay, F#4 Reverb, G#4 Filter) and turn KNOB 1 to move that block.",
+        "The white keys and the chord pads keep playing on the page, so you hear the effects while you route them.",
+        "Parallel is ChoralRoot as it always was: the three send buses side by side. The filter can now go before them (hold G#4, KNOB 1 anticlockwise).",
+        "Chain is the original firmware's way: one path through the four blocks in the order on the screen. A#4 or KNOB 2 switches the mode.",
+        "K1 is the volume (GitHub issue 30): a turn now shows the level on the screen, and the level you set is kept across power-off by SAVE held. A new keyboard starts at about 70 %.",
+        "Where every keyboard starts (Parallel, the filter after the effects) the sound is 0.26-smk37's bit for bit.",
+        "genkigenki's port (the fm1-to-smk37 guide), built from the FM-1's 0.27."
+      ],
+      "notes": [
+        "Community-tested, not tested by the maintainer: please report what works and what does not on GitHub, the Routing page's keys and screen in particular (SMK37.md, What to test, item 11).",
+        "Updating from 0.26-smk37 or an older SMK-37 build keeps your settings, sounds, loops and favourites.",
+        "Going back: M-Vave's package for your model with M-UPGRADE. Going back to 0.26-smk37 keeps everything; the routing's two settings are skipped there and the effects are the buses again."
+      ],
+      "packages": {
+        "pro": {
+          "sha256": "e9a34a5196758918302b4282aa81cc335b7e76174914a88447e8dac4977f6b24",
+          "sha256_1core": "dfebf4778792ab09cacf20e122de6159e92b03e79a31e32484e1073fc527a47d"
+        },
+        "elite": {
+          "sha256": "b3e6cf55d095c996ca42feef0d09e40f324556541488ada5a53192c76ecc472d",
+          "sha256_1core": "a8a6d3c5d7d94a0d40b91798468fe48390ac06cfcca7ea9527e56afbfc626f7c"
+        },
+        "mke": {
+          "sha256": "c786f00c69d2f0fdd512bc8b67a1a95574408f44ccf04c5ddf4b56047d04fe31",
+          "sha256_1core": "9ac2888fd379c26aab875b2702574ec21e9646b27979f1d37ce08f7bd20ad095"
+        }
+      }
+    },
+    {
+      "version": "0.26-smk37",
+      "base": "0.26",
+      "date": "2026-10-19",
+      "tag": "v0.26-smk37",
+      "title": "ChoralRoot 0.26 on the SMK-37: VA and FM6 chords on both cores",
+      "bullets": [
+        "ChoralRoot 0.26 on the M-Vave SMK-37 Pro, SMK-37 Elite, MKE-P37 and Starrykey 37 Play, with everything of 0.25-smk37.",
+        "With Dual Core On, VA and FM6 chords are now shared between the two processor cores, as P5's are, and the VA's sound code runs from fast memory: dense VA and FM6 chords have much more room before they run late.",
+        "The same sound, bit for bit: a chord played on two cores is the same samples as on one.",
+        "The screen's background is pure black instead of a very dark grey.",
+        "genkigenki's port (the fm1-to-smk37 guide), built from the FM-1's 0.26."
+      ],
+      "notes": [
+        "Community-tested, not tested by the maintainer: please report what works and what does not on GitHub.",
+        "Updating from 0.25-smk37 or an older SMK-37 build keeps your settings, sounds, loops and favourites.",
+        "Going back: M-Vave's package for your model with M-UPGRADE. Going back to 0.25-smk37 keeps everything; VA and FM6 chords render on one core there again."
+      ],
+      "packages": {
+        "pro": {
+          "sha256": "143660c3158f6fdee26c058c6bab9329f5a50a38d94453447332cd7a773df0ce",
+          "sha256_1core": "f8f840fc1ddf7210b0a02545327f3a54050f663b6b3fc618deea3334d85ef249"
+        },
+        "elite": {
+          "sha256": "c8403cced2270e615f1910c630dd053e0dd9add3174275c181fdee1a02460a0c",
+          "sha256_1core": "b73e9a8abd37f38426e30de43fefad84bf3a20d4c6e76e246e6ad1cf0abdfc36"
+        },
+        "mke": {
+          "sha256": "0d1d53300e2106a6498fdfe55b7c31a58b1fe10c735252d9816ffa10078962be",
+          "sha256_1core": "807461f72bd4fe47a2b1408ce037fcbcd9e0a5fc33466dadfb0b743b44696fd6"
+        }
+      }
+    },
+    {
+      "version": "0.25-smk37",
+      "base": "0.25",
+      "date": "2026-10-16",
+      "tag": "v0.25-smk37",
+      "title": "ChoralRoot 0.25 on the SMK-37: GRAIN's MORPH blends the sources",
+      "bullets": [
+        "ChoralRoot 0.25 on the M-Vave SMK-37 Pro, SMK-37 Elite, MKE-P37 and Starrykey 37 Play, with everything of 0.24-beta3-smk37.1 (the stock mapping's fix among it).",
+        "GRAIN's MORPH now blends sources A and B into one sound the grains play, smoothly also when ENV 2, an LFO or the matrix moves it.",
+        "Turning a GRAIN source's TONE, MOTION, SEED or TYPE changes the sound as you turn, with no silence while it is rebuilt.",
+        "GRAIN sounds that use MORPH sound different from 0.24-beta3-smk37.1: seven of the eight presets (FROZEN is unchanged) and your own sounds with MORPH between the ends or modulated.",
+        "The FM-1's own chord layout options of 0.24 (Chord Keys, SUS Window, Full K Shorts, MIDI Keys) are hidden here: the chord block stays on the pads.",
+        "genkigenki's port (the fm1-to-smk37 guide), built from the FM-1's 0.25."
+      ],
+      "notes": [
+        "Community-tested, not tested by the maintainer: please report what works and what does not on GitHub.",
+        "Updating from 0.24-beta3-smk37.1, 0.24-beta3-smk37 or 0.24-beta2-smk37 keeps your settings, sounds, loops and favourites; saved sounds keep their format.",
+        "Going back: M-Vave's package for your model with M-UPGRADE. Going back to 0.24-beta3-smk37.1 keeps your sounds; GRAIN's MORPH acts as before there."
+      ],
+      "packages": {
+        "pro": {
+          "sha256": "730dd7beac70f6ec829ae79c06dcc32ca49c8e395516539a4efb37560d0f5c5e",
+          "sha256_1core": "3983ed45dc6046c31fe40f926a6fc7dd4433f9581ed6d385f566c6fd7e8e338c"
+        },
+        "elite": {
+          "sha256": "981ba44916e9fc04208ae439264406e1f62cc6805d8f22715c9de874483e6eaa",
+          "sha256_1core": "5affd337ab02bec98c25ad092deb0edb9b4491ca94665b3d993f9bc1c971f8a0"
+        },
+        "mke": {
+          "sha256": "0fae0a345b368499d963a38afdae6f40d0ddc18c1287e1cb71947912616dd2c5",
+          "sha256_1core": "295b7ae9bc71198b7c316062fcdc2cd93dc055fd3da27a01c3ff13c2bb16a724"
+        }
+      }
+    },
+    {
+      "version": "0.24-beta3-smk37.1",
+      "base": "0.24-beta3",
+      "date": "2026-10-16",
+      "tag": "v0.24-beta3-smk37.1",
+      "title": "0.24-beta3-smk37 with the stock firmware's key mapping kept after going back",
+      "bullets": [
+        "Going back to the stock firmware now keeps its key, knob and fader mapping working: every key plays its own note (genkigenki's fix).",
+        "ChoralRoot removes the stock firmware's end marker before it first writes into the stock mapping's flash, so the stock firmware rebuilds its factory mapping when you go back.",
+        "A keyboard whose keys already all play one note after going back is fixed by starting this build once, then going back with M-UPGRADE.",
+        "Everything else as 0.24-beta3-smk37; genkigenki's port (the fm1-to-smk37 guide)."
+      ],
+      "notes": [
+        "Community-tested, not tested by the maintainer: please report what works and what does not on GitHub.",
+        "Updating from 0.24-beta3-smk37 or 0.24-beta2-smk37 keeps your settings, sounds, loops and favourites; a saved sound bank sector may move to a new place at the first start.",
+        "Going back: M-VAVE's package for your model with M-UPGRADE. Going back to 0.24-beta3-smk37 works, but a sound saved on this build may read as its earlier version there."
+      ],
+      "packages": {
+        "pro": {
+          "sha256": "7e294c28a51e9319247bae29e7b06305fc7651212d74a6953f9f434286e95ed1",
+          "sha256_1core": "1cf0c16f62f4b1c8ef86f76397bae1cb13e1dc37a286a11893f0d69d0124be7b"
+        },
+        "elite": {
+          "sha256": "e2903f29157c265564aa28b0fd058a54bffabe6f6594b375d14ceb2f66e21a5b",
+          "sha256_1core": "03863a71c010281db38775c22c9d5dc4402594c97851f305672b373404669863"
+        },
+        "mke": {
+          "sha256": "7873dac3b69b0f34efa8bf3b51eb5cb96517467b077e8feaec4ff6bd52bb3817",
+          "sha256_1core": "deed75297fe5bfcc28a7f93c86e55063a77bbe5d8d16b42eab7b78e85f558c13"
+        }
+      }
+    },
+    {
+      "version": "0.24-beta3-smk37",
+      "base": "0.24-beta3",
+      "date": "2026-10-16",
+      "tag": "v0.24-beta3-smk37",
+      "title": "ChoralRoot 0.24-beta3 on the SMK-37: the second community test build",
+      "bullets": [
+        "ChoralRoot 0.24-beta3 on the M-Vave SMK-37 Pro, SMK-37 Elite, MKE-P37 and Starrykey 37 Play, with everything of the first test build.",
+        "FM TONE uses about 27 KB less working memory with an identical sound; a full chord on a HARM preset (GLASS PAD, DRONE, HOLLOW, CLAV, STRINGS, SQUARE LEAD) takes slightly more of the processor.",
+        "0.24-beta3's fix for the FM-1's SAFE MODE Flash Data (it now clears the saved sounds) was already how the SMK-37 build worked.",
+        "genkigenki's port (the fm1-to-smk37 guide), brought onto 0.24-beta3."
+      ],
+      "notes": [
+        "Community-tested, not tested by the maintainer: please report what works and what does not on GitHub.",
+        "Updating from 0.24-beta2-smk37 keeps your settings, sounds, loops and favourites. The first start from the stock firmware clears its settings; a keyboard that ran genkigenki's earlier ChoralRoot build keeps its sounds.",
+        "Going back: 0.24-beta2-smk37 at any time, with nothing changed for your data; or M-VAVE's package for your model with M-UPGRADE. The calibration is never written."
+      ],
+      "packages": {
+        "pro": {
+          "sha256": "dd6d7cff1c58ec8704eb2aeb1ec2e69786a12bb0a6a90d10ab78ec3a14a57cb0",
+          "sha256_1core": "0cd17c86cf9b4e6f871d2d8d2ed2ef445b903d08962f99ee6907cd24a2a462c8"
+        },
+        "elite": {
+          "sha256": "f2ee166d40d5932ba39f3a578ce765d8d1f2978523c5cd62b0b9e9e441ad72bb",
+          "sha256_1core": "2c027cea4d5678179c7c4862982661f505c6b01c9bdcf08cac5b3482e67ee3a2"
+        },
+        "mke": {
+          "sha256": "66af1d7faa3e5d0e4cf9c1ecd11005995b7842b08745e2dff79e01aa6659b0c0",
+          "sha256_1core": "4c1704b2b00dcc791f2f24c14c7ce4965de668937044a38da59cde04affff107"
+        }
+      }
+    },
+    {
+      "version": "0.24-beta2-smk37",
+      "base": "0.24-beta2",
+      "date": "2026-10-16",
+      "tag": "v0.24-beta2-smk37",
+      "title": "ChoralRoot 0.24-beta2 on the SMK-37: the first community test build",
+      "bullets": [
+        "ChoralRoot 0.24-beta2 on the M-Vave SMK-37 Pro, SMK-37 Elite, MKE-P37 and Starrykey 37 Play: every engine (GRAIN among them), the looper, the sound pool, favourites and dual core.",
+        "The whole keybed plays roots with velocity; the chord types, the extensions and LOCK are on the pads, with the performance modes on the pads left over.",
+        "The faders set the effect sends, the wheels bend and add vibrato, K1 is the volume and K5..K8 are the four sound knobs.",
+        "genkigenki's port (the fm1-to-smk37 guide), brought onto 0.24-beta2."
+      ],
+      "notes": [
+        "Community-tested, not tested by the maintainer: please report what works and what does not on GitHub.",
+        "The first start clears the stock firmware's settings. A keyboard that ran genkigenki's earlier ChoralRoot build keeps its sounds.",
+        "Going back: M-VAVE's package for your model with M-UPGRADE. The calibration is never written."
+      ],
+      "packages": {
+        "pro": {
+          "sha256": "043c56f0f336cc071d6ea2e440543aefb7fc4f7bff96b05681f28f20cb660a12",
+          "sha256_1core": "000bc5ce4d4275681312c5cdad86560494d9db1872e4aaeb095ce9661f5a78d3"
+        },
+        "elite": {
+          "sha256": "ac2ff66a882dbc2873d4b858d6e2fe227619149a9ff834a0d86059a7a2d50ce6",
+          "sha256_1core": "e218593e9ecd9931a3081378ec61ad814ac7c509806b3c1f89d7931914e4ebb0"
+        },
+        "mke": {
+          "sha256": "830981c33e5ebefc2b6613e3946d5273b87f60be11fa0818a73c08903e80d342",
+          "sha256_1core": "994be9f44dc9e4df0d488e1b011c2824b5a0b22c4cb651e4885652d1237ed707"
+        }
+      }
+    }
+  ]
+}

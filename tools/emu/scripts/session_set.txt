@@ -1,0 +1,132 @@
+# test_persist.sh, the session, run 1 (a fresh flash file): "switch off, switch on: exactly where you left off"
+# (docs/SETTINGS.md "The session"). A recognisable state, every piece of it something 0.17 forgot at power-off:
+#   a loop recorded in slot 3 (D, Em) and stopped;
+#   the chord part's sound edited and not saved (EDIT, KNOB 2), the bass part's too (BASS held + EDIT, KNOB 2);
+#   Bass on (BASS tap), its Level turned down (the BASS layer's KNOB 4);
+#   the chorus's Width turned (0.21), the delay picked in the FX layer (Delay 1), its time, spread, feedback and send
+#   turned, then its second
+#   page (SELECT +1: Delay 2), Mode to Stereo and Tone up: the effects' parameters are global and the session's;
+#   Perform on with Arpeggiate (the PERF layer, SELECT +3);
+#   the voicing +2 (KNOB 1), the octave -1 (OCT-);
+#   LOCK on with MAJ + M7 latched (B3, then A#3 + A3).
+# Then nothing for 4 s: nothing is written (dump 1: saving is manual, 0.18). SAVE held: the settings, the session and
+# the loop are each written once (dump 2), quit.
+keys classic                  # (0.25.1: FM-1 is the default; this script was written for the Classic chord keys)
+wait 300
+btn PLAY down                 # the PLAY menu: slot 3
+wait 400
+knob PRESETS +2
+wait 300
+btn PLAY up
+btn OCT-
+wait 300
+btn REC
+wait 300
+btn A#3 down
+btn D4 down
+wait 500
+btn D4 up
+btn A#3 up
+wait 500
+btn G#3 down
+btn E4 down
+wait 500
+btn E4 up
+btn G#3 up
+wait 400
+btn REC                       # the take ends: a loop, playing
+wait 400
+btn PLAY                      # stopped (in RAM: the global save writes it)
+wait 1200
+btn EDIT                      # the chord sound's editor
+wait 400
+knob KNOB2 +3
+wait 300
+btn HOME
+wait 300
+btn ENV down                  # BASS held + EDIT: the bass sound's
+wait 100
+btn EDIT
+wait 100
+btn ENV up
+wait 400
+knob KNOB2 +3
+wait 300
+btn HOME
+wait 300
+btn ENV                       # BASS tap: the bass on, on the sound just edited
+wait 300
+btn ENV down                  # the BASS layer: KNOB 4, the bass part's Level
+wait 500
+btn ENV up
+wait 300
+knob KNOB4 -4
+wait 300
+btn OCT-
+wait 300
+btn FX down                   # the FX layer: Delay 1, its time (1/8 -> 1/8., anticlockwise: slower), spread (1:1 ->
+wait 500                      # 3:4), feedback, send
+btn FX up
+wait 300
+knob SELECT +3                # (Sends, Reverb 1, Reverb 2, Chorus): its Width 127 -> 125 (0.21: KNOB 3, tag 30; two detents in a frame: one each)
+wait 300
+knob KNOB3 -2
+wait 200
+knob SELECT +1                # Delay 1
+wait 300
+knob KNOB1 -2
+wait 200
+knob KNOB2 +1
+wait 200
+knob KNOB3 -3
+wait 200
+knob KNOB4 +3
+wait 300
+knob SELECT +1                # Delay 2: Mode Ping-pong -> Stereo, Tone 70 -> 82
+wait 300
+knob KNOB2 -1
+wait 200
+knob KNOB3 +2
+wait 300
+knob SELECT +3                # (Drive, Filter) Routing (issue 21): A#4 tapped (Chain, tag 36 = 1), D#4 held + KNOB 1 +1
+wait 300                      # (Chorus > Reverb > Delay > Filter, Order 2, tag 35); then back to Delay 2 (the page kept)
+key A#4 down
+wait 100
+key A#4 up
+wait 200
+key D#4 down
+wait 200
+knob KNOB1 +1
+wait 200
+key D#4 up
+wait 300
+knob SELECT -3
+wait 300
+btn OCT-
+wait 300
+btn ARP down                  # the PERF layer: Arpeggiate (perform on)
+wait 500
+btn ARP up
+wait 300
+knob SELECT +3
+wait 300
+btn OCT-
+wait 300
+knob KNOB1 +2                 # the voicing
+wait 300
+btn OCT-                      # the octave
+wait 300
+btn B3                        # LOCK; MAJ + M7 held and released: latched
+wait 200
+btn A#3 down
+btn A3 down
+wait 200
+btn A3 up
+btn A#3 up
+wait 300
+wait 4000
+dump                          # 1: the state as set, 4 s later: nothing saved
+btn SAVE 900                  # the global save
+wait 1500
+dump                          # 2: saved: settings 1, session 1, the loop in slot 3
+quit
