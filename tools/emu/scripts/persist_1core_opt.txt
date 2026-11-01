@@ -13,7 +13,7 @@ knob KNOB1 -1
 wait 400
 shot build/emu/test/persist_1core_opt.ppm
 dump
-knob SELECT +2                # Version (past Output)
+knob SELECT +8                # Version (past Output and the six Ableton Note entries)
 wait 300
 shot build/emu/test/persist_1core_version.ppm
 dump

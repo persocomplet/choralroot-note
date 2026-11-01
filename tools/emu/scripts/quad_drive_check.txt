@@ -81,7 +81,7 @@ btn EDIT
 wait 400
 btn GLO
 wait 200
-knob SELECT +33
+knob SELECT +39               # (the last entry: Reset Settings; +6 since the Ableton Note entries)
 wait 300
 btn OCT+
 wait 200

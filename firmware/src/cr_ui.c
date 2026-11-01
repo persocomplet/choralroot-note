@@ -546,6 +546,7 @@ _Static_assert(XFE_CHORUS == 0 && XFE_DELAY == 1 && XFE_REVERB == 2 && XFE_FILTE
 static const char *const CU_XDIV[XF_NDIV] = {"1/32", "1/16T", "1/32.", "1/16", "1/8T", "1/16.", "1/8", "1/4T", "1/8.",
                                              "1/4", "1/2T", "1/4.", "1/2"};      /* cr_fx.c XF_DIV's order */
 static const char *const CU_BASSMODE[4] = {"Chords Only", "Unison Bass", "Bass Single Notes", "Solo"};
+static const char *const CU_NOTE_PART[4] = {"All", "Chords", "Bass", "Raw Chord"};   /* Part to Note (CRS_NOTE_*) */
 static const char *const CU_VIEW[6] = {"Chord", "Keyboard", "Notes", "Geek Out", "Scope", "Geek Out 2"};
 static const char *const CU_LOOPLEN[6] = {"Free", "1 bar", "2 bars", "4 bars", "8 bars", "16 bars"};
 static const char *const CU_SIG[CRL_NSIG] = {"4/4", "3/4", "6/8"};
@@ -616,6 +617,13 @@ static struct {
     uint8_t smk_pedal;                    /* Options > Pedal: the pedal jack 0 Sustain, 1 Expression (the session's:
                                            * cr_settings.h smk_pedal; cr_smk_pedal) */
 #endif
+    /* the Ableton Note Options (docs/ABLETON-NOTE.md; cr_settings.h "The Ableton Note Options"): MIDI out and
+     * ChoralRoot In shaped for recording the parts one by one into Ableton Note */
+    uint8_t note_part;                    /* Part to Note: CRS_NOTE_ALL (every stream, as before) / CHORDS / BASS / RAW */
+    uint8_t note_audio;                   /* Note Audio: 0 Master on ChoralRoot In 1-2, 1 Follow (the part's pair) */
+    int8_t note_oct[CR_NSTREAM];          /* Note Oct per stream, -2 .. +2: MIDI out only (MAIN and RAW: Chords) */
+    uint8_t note_remote;                  /* Note Start/Stop: 0 Off, 1 .. 16 the channel of CC 102 on the loop's start /
+                                           * stop */
 } cs;
 
 /* the layout (docs/CHORD-LAYOUT.md): Classic unless Options > Chord Keys says FM-1 (never on the SMK-37: its chord keys
@@ -1126,6 +1134,22 @@ static void cu_perf_pick(uint32_t i)
         cr_post(CRE_PARAM, CU_PERF[cs.perf_sel].mode, CR_P_RANGE, CU_PERF[cs.perf_sel].range);
     }
 }
+/* The Ableton Note Options (docs/ABLETON-NOTE.md) to cr_out.c: which streams go out on MIDI (Part to Note), their
+ * octave there (Note Oct: the chord octave on MAIN and RAW), the Start/Stop channel (Note Start/Stop) and what
+ * ChoralRoot In's first pair carries (Note Audio: the part's dry pair when it follows Chords or Bass, else the master).
+ * The ISR reads each byte as it goes: a change applies to the next note (a sounding one ends where it began) */
+static void cu_note_route(void)
+{
+    static const uint8_t MASK[4] = {7u, 1u << CR_STREAM_MAIN, 1u << CR_STREAM_BASS, 1u << CR_STREAM_RAW};
+    cs.note_oct[CR_STREAM_RAW] = cs.note_oct[CR_STREAM_MAIN];
+    cr_route.out_mask = MASK[cs.note_part & 3u];
+    cr_route.oct[CR_STREAM_MAIN] = cs.note_oct[CR_STREAM_MAIN];
+    cr_route.oct[CR_STREAM_BASS] = cs.note_oct[CR_STREAM_BASS];
+    cr_route.oct[CR_STREAM_RAW] = cs.note_oct[CR_STREAM_RAW];
+    cr_route.remote = (uint8_t)(cs.note_remote <= 16u ? cs.note_remote : 0u);
+    cr_usb_src = (uint8_t)(!cs.note_audio ? CR_USB_SRC_MASTER : cs.note_part == CRS_NOTE_CHORDS ? CR_USB_SRC_CHORD
+                           : cs.note_part == CRS_NOTE_BASS ? CR_USB_SRC_BASS : CR_USB_SRC_MASTER);
+}
 static void cu_route(void)                        /* Options > MIDI: channels and the RAW stream */
 {
     uint32_t s;
@@ -1136,6 +1160,7 @@ static void cu_route(void)                        /* Options > MIDI: channels an
     }
     cr_route.part[CR_STREAM_RAW] = cs.raw_sound ? CR_PART_CHORD : CR_NOPART;
     cr_mkeys_ch = cs.midi_keys;                   /* MIDI Keys (0 Off; never a part's channel: opt_set) */
+    cu_note_route();
     cr_post(CRE_STREAM, CR_STREAM_RAW, 0, cs.ch[CR_STREAM_RAW] || cs.raw_sound);
 }
 
@@ -1149,6 +1174,9 @@ enum { O_STYLE, O_EXTADD, O_SECRET,
 #endif
        O_BASSMODE, O_SINGLE, O_SPLIT, O_CH_MAIN, O_CH_BASS, O_CH_RAW, O_RAW_SOUND,
        O_CLOCK, O_VIEW, O_MOTION, O_NAMES, O_LEDS, O_HOLD, O_USB_IN, O_USB_LEVEL, O_USB_RATE, O_DUALCORE, O_OUTPUT,
+       O_NOTE_PART, O_NOTE_AUDIO, O_NOTE_OCT_CH, O_NOTE_OCT_BS, O_NOTE_REMOTE, O_NOTE_SETUP,   /* Ableton Note
+                                          * (docs/ABLETON-NOTE.md): together, after Output, so that every entry before
+                                          * them keeps its place */
        O_VERSION,
        O_CALIB,
        O_RESET,                           /* Reset Settings: the last entry of a normal session */
@@ -1163,6 +1191,7 @@ static const char *const O_NAME[O_N] = {"Play Style", "Extension Addition", "Sec
 #endif
     "Bass Behaviour", "Single Notes", "Split Point", "MIDI Perform", "MIDI Bass", "MIDI Raw Chord", "Raw Chord Sound",
     "MIDI Clock", "View", "Motion", "Chord Names", "LEDs", "Hold Time", "USB Record", "USB Level", "USB Rate", "Dual Core", "Output",
+    "Part to Note", "Note Audio", "Note Oct Chords", "Note Oct Bass", "Note Start/Stop", "Note Setup",
     "Version",
     "Calibrate", "Reset Settings", "Safe Mode", "Flash Data"};
 static const int16_t O_MAX[O_N] = {2, 1, 2, 1, 10, 1, 16, 1, 127, CU_TOUCH_MAX, 2, CU_VCURVE_MAX, CU_ATSENS_MAX,
@@ -1170,7 +1199,9 @@ static const int16_t O_MAX[O_N] = {2, 1, 2, 1, 10, 1, 16, 1, 127, CU_TOUCH_MAX, 
                                    1,
 #endif
                                    3, 2, 11, 16, 16,
-                                   16, 1, 2, V_N - 1, CR_MOTION_N - 1, 1, 1, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0};
+                                   16, 1, 2, V_N - 1, CR_MOTION_N - 1, 1, 1, 3, 1, 1, 1, 1, 1,
+                                   3, 1, 4, 4, 16, 0,           /* (Ableton Note; the Note Octs: 0 .. 4 = -2 .. +2) */
+                                   0, 0, 0, 0, 0};
 static uint32_t cu_opt_n(void) { return cr_safe ? O_N : O_N_NORMAL; }
 /* an entry listed (docs/CHORD-LAYOUT.md): the chord layouts' four not on the SMK-37 (its chord keys are pads), the
  * SUS Window only while Chord Keys is FM-1. SELECT skips the others (cu_opt_next); their values are kept */
@@ -1254,6 +1285,11 @@ static int32_t opt_get(uint32_t o)
     case O_CH_MAIN: case O_CH_BASS: case O_CH_RAW: return cs.ch[o - O_CH_MAIN];
     case O_RAW_SOUND: return cs.raw_sound;
     case O_CLOCK: return cr_route.clock_in ? 2 : cr_route.clock_out;
+    case O_NOTE_PART: return cs.note_part;
+    case O_NOTE_AUDIO: return cs.note_audio;
+    case O_NOTE_OCT_CH: return cs.note_oct[CR_STREAM_MAIN] + 2;
+    case O_NOTE_OCT_BS: return cs.note_oct[CR_STREAM_BASS] + 2;
+    case O_NOTE_REMOTE: return cs.note_remote;
     case O_VIEW: return cs.view;
     case O_MOTION: return cr_motion;
     case O_NAMES: return cs.names_std;
@@ -1310,6 +1346,11 @@ static void opt_set(uint32_t o, int32_t v)
         break;
     case O_RAW_SOUND: cs.raw_sound = (uint8_t)v; cu_route(); break;
     case O_CLOCK: cr_route.clock_in = (uint8_t)(v == 2); cr_route.clock_out = (uint8_t)(v == 1); break;
+    case O_NOTE_PART: cs.note_part = (uint8_t)v; cu_note_route(); break;
+    case O_NOTE_AUDIO: cs.note_audio = (uint8_t)v; cu_note_route(); break;
+    case O_NOTE_OCT_CH: cs.note_oct[CR_STREAM_MAIN] = (int8_t)(v - 2); cu_note_route(); break;
+    case O_NOTE_OCT_BS: cs.note_oct[CR_STREAM_BASS] = (int8_t)(v - 2); cu_note_route(); break;
+    case O_NOTE_REMOTE: cs.note_remote = (uint8_t)v; cu_note_route(); break;
     case O_VIEW: cs.view = (uint8_t)v; break;
     case O_MOTION: cr_motion = (uint8_t)v; break;
     case O_NAMES: cs.names_std = (uint8_t)v; cr_chord_names_set(v); break;   /* (the names only: docs/CHORD-NAMES.md) */
@@ -1413,6 +1454,17 @@ static void opt_text(uint32_t o, char *d, uint32_t n)
         else { cu_cpy(d, "ch ", n); cu_int(d + 3, v, 0, n > 3u ? n - 3u : 0u); }
         break;
     case O_CLOCK: cu_cpy(d, CLOCK[v % 3], n); break;
+    case O_NOTE_PART: cu_cpy(d, CU_NOTE_PART[v & 3], n); break;
+    case O_NOTE_AUDIO: cu_cpy(d, v ? "Follow Part" : "Master", n); break;
+    case O_NOTE_OCT_CH: case O_NOTE_OCT_BS:
+        if (v == 2) cu_cpy(d, "0", n);
+        else { cu_int(d, v - 2, 1, n); cu_cat(d, v == 1 || v == 3 ? " octave" : " octaves", n); }
+        break;
+    case O_NOTE_REMOTE:
+        if (!v) cu_cpy(d, "Off", n);
+        else { cu_cpy(d, "ch ", n); cu_int(d + 3, v, 0, n > 3u ? n - 3u : 0u); }
+        break;
+    case O_NOTE_SETUP: cu_cpy(d, "OCT+ sets it up", n); break;
     case O_VIEW: cu_cpy(d, CU_VIEW[v % V_N], n); break;
     case O_MOTION: cu_cpy(d, MOTION[v % 3], n); break;
     case O_NAMES: cu_cpy(d, v ? "Standard" : "Orchid", n); break;
@@ -1569,6 +1621,63 @@ static struct {
 #else
 #define cu_trace(...) ((void)0)
 #endif
+/* ------------------------------------------------------ Ableton Note --- */
+/* docs/ABLETON-NOTE.md. What Note's Set Settings should say for the FM-1's key: "D Minor \267 120 BPM" (Key Mode's
+ * tonic moved by its Transpose, the scale, the tempo), "Key Mode off \267 120 BPM" without Key Mode. Note takes
+ * neither over MIDI: the player sets them there, once */
+static void cu_note_key_text(char *d, uint32_t n)
+{
+    if (cs.key_on) {
+        int32_t pc = ((int32_t)cs.tonic + (int32_t)cs.transpose) % 12;
+        cu_cpy(d, CU_NOTE[pc < 0 ? pc + 12 : pc], n);
+        cu_cat(d, cs.scale == CR_SCALE_MINOR ? " Minor" : " Major", n);
+    } else {
+        cu_cpy(d, "Key Mode off", n);
+    }
+    cu_cat(d, " \267 ", n);
+    {
+        char b[8];
+        cu_int(b, cs.bpm, 0, sizeof b);
+        cu_cat(d, b, n);
+    }
+    cu_cat(d, " BPM", n);
+}
+/* Options > Note Setup, OCT+: the FM-1 set for recording into Ableton Note on an iPhone / iPad in one step. ChoralRoot
+ * In on, offering 48 kHz (iOS runs at 48 kHz), recorded at full level (MASTER sets the speaker alone); the chords and
+ * the bass on their MIDI channels when they were off; Part to Note Chords when it was All (one part per Note track);
+ * Note Audio Follow (1-2 carry that part); Note Start/Stop on ch 16 when it was off. The rest is kept. USB Rate and
+ * USB Record changing: the FM-1 leaves USB for a second (cu_usb_apply) */
+static void cu_note_setup(void)
+{
+    if (!cs.ch[CR_STREAM_MAIN])
+        opt_set(O_CH_MAIN, cs.midi_keys == 1u ? 2 : 1);   /* (opt_set: MIDI Keys never shares a part's channel) */
+    if (!cs.ch[CR_STREAM_BASS])
+        opt_set(O_CH_BASS, cs.ch[CR_STREAM_MAIN] == 2u || cs.midi_keys == 2u ? 3 : 2);
+    if (cs.note_part == CRS_NOTE_ALL)
+        cs.note_part = CRS_NOTE_CHORDS;
+    cs.note_audio = 1;
+    if (!cs.note_remote)
+        cs.note_remote = 16;
+    cs.usb_in = 1;
+    cs.usb48 = 1;
+    cs.usb_fixed = 1;
+    cu_usb_apply();
+    cu_route();
+    cu_message("Note setup done", CR_COL_GREEN);
+    cu_trace("note: setup (part %u, start/stop ch %u)\n", (unsigned)cs.note_part, (unsigned)cs.note_remote);
+}
+/* GLO held + BASS (ENV): Part to Note's next part, All -> Chords -> Bass -> All, without the Options (Raw Chord:
+ * Options only; from it the next is All). The screen says which, and what ChoralRoot In 1-2 then carry */
+static void cu_note_part_next(void)
+{
+    static const char *const MSG[4] = {"to Note: all parts", "to Note: chords", "to Note: bass", "to Note: raw chord"};
+    cs.note_part = (uint8_t)(cs.note_part == CRS_NOTE_CHORDS ? CRS_NOTE_BASS
+                             : cs.note_part == CRS_NOTE_ALL ? CRS_NOTE_CHORDS : CRS_NOTE_ALL);
+    cu_note_route();
+    cu_message(MSG[cs.note_part & 3u], cs.note_part == CRS_NOTE_BASS ? CR_COL_ORANGE : CR_COL_WHITE);
+    cu_trace("note: part %u\n", (unsigned)cs.note_part);
+}
+
 static void cu_fx_route_trace(void)               /* the routing as it is (the emulator's tests) */
 {
     cu_trace("fx: routing %s %s > %s > %s > %s\n", xfp[XP_RMODE] == 1 ? "chain" : "parallel", cu_fx_posname(0),
@@ -3348,6 +3457,20 @@ static void cu_oct_tap(uint32_t b)
         cu_reset();                               /* the second: every option to its default, saved */
         return;
     }
+    if (b == B_OCTUP && cu.opt_open && cu.opt_sel == O_NOTE_REMOTE && !cu.lock && !cu.page) {
+        if (cs.note_remote) {                     /* Options > Note Start/Stop, OCT+: one press now, for Note's MIDI
+                                                   * mapping to learn (docs/ABLETON-NOTE.md) */
+            cr_note_press_req++;
+            cu_message("CC 102 sent", CR_COL_WHITE);
+        } else {
+            cu_message("choose a channel first", CR_COL_WHITE);
+        }
+        return;
+    }
+    if (b == B_OCTUP && cu.opt_open && cu.opt_sel == O_NOTE_SETUP && !cu.lock && !cu.page) {
+        cu_note_setup();                          /* Options > Note Setup, OCT+ (docs/ABLETON-NOTE.md) */
+        return;
+    }
     if (b == B_OCTUP && cu.opt_open && cu.opt_sel == O_CALIB && !cu.lock && !cu.page) {
         cu_close_all();
         cu_calib_start();                         /* Options > Calibrate, OCT+: Felucca's HARDWARE CALIBRATION */
@@ -5050,6 +5173,10 @@ static void cu_btn_press(uint32_t b)
         cu_rec_mode_next();                        /* GLO held + REC: the next record mode, in the same places (the
                                                     * loop editor too: no step is cleared). REC is swallowed above:
                                                     * no take, and REC held is undo only when it is pressed first */
+    if (cu.armed == BT_OPT && b == BT_BASS && !(cu.page == PG_EDIT && !cu_layer()))
+        cu_note_part_next();                       /* GLO held + BASS: Part to Note's next part (docs/ABLETON-NOTE.md),
+                                                    * from anywhere but the sound editor (SHIFT and ENV there). BASS
+                                                    * is swallowed above: the bass is not switched */
     if (cu.armed == BT_BASS && b == BT_EDIT) {     /* BASS held + EDIT / SAVE: the bass sound's editor, saving */
         cu.lock = L_NONE;
         cu_edit_open(1);
@@ -7637,6 +7764,25 @@ static void cu_options_screen(cr_screen_t *s)
     else if (cu.opt_sel == O_USB_RATE)             /* (48 kHz is the computer's choice once offered; it costs the
                                                     * audio 6 % while it records: docs/USB-AUDIO.md "48 kHz") */
         cu_cpy(s->label, cs.usb48 ? "the computer picks the rate" : "48 kHz: not offered", sizeof s->label);
+    else if (cu.opt_sel == O_NOTE_PART) {          /* (docs/ABLETON-NOTE.md: one part per Note track) */
+        static const char *const L[4] = {"MIDI out: every part", "MIDI out: chords \267 GLO+BASS",
+                                         "MIDI out: bass \267 GLO+BASS", "MIDI out: the raw chord only"};
+        cu_cpy(s->label, L[cs.note_part & 3u], sizeof s->label);
+    } else if (cu.opt_sel == O_NOTE_AUDIO)
+        cu_cpy(s->label, !cs.note_audio ? "USB 1-2: the master"
+                         : cs.note_part == CRS_NOTE_CHORDS ? "USB 1-2: the chords, dry"
+                         : cs.note_part == CRS_NOTE_BASS ? "USB 1-2: the bass, dry" : "USB 1-2: the master (all parts)",
+               sizeof s->label);
+    else if (cu.opt_sel == O_NOTE_OCT_CH || cu.opt_sel == O_NOTE_OCT_BS)
+        cu_cpy(s->label, "MIDI only, the FM-1 unchanged", sizeof s->label);
+    else if (cu.opt_sel == O_NOTE_REMOTE)
+        cu_cpy(s->label, !cs.note_remote ? "LOOP starts Note too: off"
+                         : cr_route.clock_in ? "Clock In: OCT+ only sends it" : "LOOP, OCT+: CC 102 to Note",
+               sizeof s->label);
+    else if (cu.opt_sel == O_NOTE_SETUP) {         /* what Note's Key & Scale and tempo should say */
+        cu_cpy(s->label, "Note: ", sizeof s->label);
+        cu_note_key_text(s->label + 6, sizeof s->label - 6u);
+    }
     else if (cu.opt_sel == O_LAYOUT)               /* (docs/CHORD-LAYOUT.md) */
         cu_cpy(s->label, cs.layout ? "SUS: G#3 + A#3 \267 LOCK: LFO" : "SUS: C#4 \267 LOCK: B3", sizeof s->label);
     else if (cu.opt_sel == O_SUSWIN)

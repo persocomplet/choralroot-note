@@ -78,6 +78,10 @@ par_build cc -std=c99 -O2 -w -DFELUCCA_QUAD=1 -Ibuild/gen -o build/host/quad_ren
 t python3 tools/digitone/test_quad_times.py
 par_build cc -std=c99 -O2 -w -Ibuild/gen -Ifirmware/src -Itests -o build/host/cr_trans_test tests/cr_trans_test.c -lm
 t ./build/host/cr_trans_test
+# the Ableton Note Options (docs/ABLETON-NOTE.md): Part to Note, Note Oct (note-offs and aftertouch as sent), Note
+# Start/Stop on the loop's start / stop (never with MIDI Clock In), Note Audio on ChoralRoot In 1-2
+par_build cc -std=c99 -O2 -w -Ibuild/gen -Ifirmware/src -Itests -o build/host/cr_note_test tests/cr_note_test.c -lm
+t ./build/host/cr_note_test
 # the bass part on the second core (firmware/src/cr_cpu1.h, docs/DUALCORE.md): the split bit for bit, the budgets, the fail-safes
 par_build cc -std=gnu11 -O2 -w -Ibuild/gen -Ifirmware/src -Itests -o build/host/cr_cpu1_test tests/cr_cpu1_test.c -lm
 t ./build/host/cr_cpu1_test
@@ -105,6 +109,10 @@ t logged_count_last cr_fx_test build/fx-review
 # switch, MASTER at power-on (docs/AUDIO-QUALITY.md "Round 3"), on the emulator's firmware build
 par_build cc -std=gnu11 -O1 -w -Ibuild/gen -Ifirmware/src -Itests -o build/host/cr_align_test tests/cr_align_test.c -lm
 t align
+# the Ableton Note Options in the instrument (docs/ABLETON-NOTE.md): the six entries after Output, KNOB 1, GLO + BASS,
+# Note Start/Stop's OCT+, Note Setup's OCT+ and its key line, the record over a capture and a load (tools/emu/emu_fw.c)
+par_build cc -std=gnu11 -O1 -w -Ibuild/gen -Ifirmware/src -Itests -o build/host/cr_note_ui_test tests/cr_note_ui_test.c -lm
+t logged_last cr_note_ui_test
 # backup / restore SysEx (cr_backup.c) on the emulator's firmware build (tools/emu/emu_firmware.h; macOS: os_unfair_lock)
 par_build cc -std=gnu11 -O1 -w -Ibuild/gen -Ifirmware/src -Itests -DCZ_FACTORY_RAW -o build/host/cr_backup_test tests/cr_backup_test.c -lm
 t ./build/host/cr_backup_test

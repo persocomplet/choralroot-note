@@ -229,13 +229,20 @@ static void crs_sanitize(cr_settings_t *s)
     CRS_FIX(loop_count_in, 0, 1);
     CRS_FIX(loop_level, 0, 100);
     for (i = 0; i < 3; i++) {
-        if (s->midi_en[i] > 1u) s->midi_en[i] = d.midi_en[i];
+        if (s->midi_en[i] & 0xF0u)                 /* (bit 0 on, bits 1 .. 3 the Note Oct; an unknown bit: the default) */
+            s->midi_en[i] = d.midi_en[i];
+        else if (CRS_NOTE_OCT(s, i) < -2 || CRS_NOTE_OCT(s, i) > 2)   /* (not an octave: 0, the stream's on kept) */
+            s->midi_en[i] = (uint8_t)CRS_MEN_ON(s, i);
         if (s->midi_ch[i] > 15u) s->midi_ch[i] = d.midi_ch[i];
     }
-    CRS_FIX(clock_mode, 0, CRS_CLOCK_IN);
-    CRS_FIX(raw_sound, 0, 0x3F);                   /* (0.24: bits 1 .. 5 MIDI Keys' channel) */
-    if (CRS_MIDI_KEYS(s) > 16u)                    /* (no such channel: Off, Raw Chord Sound kept) */
-        s->raw_sound = (uint8_t)(s->raw_sound & 1u);
+    if ((s->clock_mode & 0x80u) || CRS_CLOCK(s) > CRS_CLOCK_IN)   /* (bits 2 .. 6: Note Start/Stop's channel) */
+        s->clock_mode = d.clock_mode;
+    else if (CRS_NOTE_REMOTE(s) > 16u)             /* (no such channel: Off, the clock kept) */
+        s->clock_mode = (uint8_t)CRS_CLOCK(s);
+                                                   /* raw_sound: every byte is one (0.24: bits 1 .. 5 MIDI Keys' channel;
+                                                    * bits 6 .. 7 Part to Note) */
+    if (CRS_MIDI_KEYS(s) > 16u)                    /* (no such channel: Off, Raw Chord Sound and Part to Note kept) */
+        s->raw_sound = (uint8_t)(s->raw_sound & 0xC1u);
     if ((s->view & 0x38u) || CRS_VIEW(s) > 5u)    /* (v9: bit 7 the lock, v12: bit 6 Dual Core On; 5 Geek Out 2
                                                     * since 0.22; an unknown bit or view: the default view, unlocked;
                                                     * Dual Core as the record has it: since 0.22 the default is On,
@@ -254,7 +261,8 @@ static void crs_sanitize(cr_settings_t *s)
                                                     * bit 3: Chord Names Standard, CRS_NAMES_STD; bit 4: 6th with 7th
                                                     * Octave up, CRS_SIXTH_UP) */
     CRS_FIX(usb_in, 0, 1);
-    CRS_FIX(usb_level, 0, CRS_USB_FIXED);
+    if (s->usb_level & ~(uint8_t)(CRS_USB_FIXED | CRS_USB_FOLLOW))   /* (bit 1: Note Audio Follow) */
+        s->usb_level = d.usb_level;
     if (CRS_LOOP_MODE(s) >= CRS_NLOOPMODE)         /* (an unknown mode: the defaults; v13: bit 5 the KEY layer's keys,
                                                     * bits 6 / 7 LOCK's styles: every bit of the byte has a job) */
         s->loop_rec = d.loop_rec;
@@ -550,17 +558,17 @@ void cr_settings_apply(const cr_settings_t *s, cr_t *c, cr_settings_out_t *o)
     cr_set_perform(c, s->perform_on);
     cr_set_sticky(c, (int)CRS_LATCH(s));           /* (bit 0: the other bits are the UI's Options) */
     cr_set_tempo(c, s->bpm);
-    cr_set_stream(c, CR_STREAM_RAW, s->midi_en[CR_STREAM_RAW] || CRS_RAW(s));
+    cr_set_stream(c, CR_STREAM_RAW, CRS_MEN_ON(s, CR_STREAM_RAW) || CRS_RAW(s));
     if (o) {
         for (i = 0; i < 3; i++) {
-            o->midi_en[i] = s->midi_en[i];
+            o->midi_en[i] = (uint8_t)CRS_MEN_ON(s, i);
             o->ch[i] = s->midi_ch[i];
         }
         o->part[CR_STREAM_MAIN] = 0;
         o->part[CR_STREAM_BASS] = 1;
         o->part[CR_STREAM_RAW] = CRS_RAW(s) ? 0 : CRS_NONE;
-        o->clock_out = s->clock_mode == CRS_CLOCK_OUT;
-        o->clock_in = s->clock_mode == CRS_CLOCK_IN;
+        o->clock_out = CRS_CLOCK(s) == CRS_CLOCK_OUT;
+        o->clock_in = CRS_CLOCK(s) == CRS_CLOCK_IN;
     }
 }
 
@@ -590,11 +598,12 @@ void cr_settings_capture(cr_settings_t *s, const cr_t *c, const cr_settings_out_
             s->par[m][p] = (int16_t)cr_get_param(c, (cr_pmode_t)m, p);
     if (o) {
         for (i = 0; i < 3; i++) {
-            s->midi_en[i] = o->midi_en[i] ? 1u : 0u;
+            s->midi_en[i] = (uint8_t)((s->midi_en[i] & 0x0Eu) | (o->midi_en[i] ? 1u : 0u));   /* (the Note Oct kept) */
             s->midi_ch[i] = (uint8_t)(o->ch[i] & 15u);
         }
         s->raw_sound = (uint8_t)((s->raw_sound & (uint8_t)~1u) | (o->part[CR_STREAM_RAW] != CRS_NONE ? 1u : 0u));
-        s->clock_mode = o->clock_in ? CRS_CLOCK_IN : o->clock_out ? CRS_CLOCK_OUT : CRS_CLOCK_OFF;
+        s->clock_mode = CRS_CLOCK_BYTE(o->clock_in ? CRS_CLOCK_IN : o->clock_out ? CRS_CLOCK_OUT : CRS_CLOCK_OFF,
+                                       CRS_NOTE_REMOTE(s));   /* (Note Start/Stop kept) */
     }
     cr_settings_seal(s);
 }
@@ -651,7 +660,7 @@ static struct { uint32_t auto_saves, ahead, ahead_boot; uint8_t off; } crq;
  * and fx.c (USB Level) */
 static void crs_usb_apply(const cr_settings_t *s)
 {
-    fx_usb_fixed = s->usb_level == CRS_USB_FIXED;
+    fx_usb_fixed = CRS_USB_LEVEL(s) == CRS_USB_FIXED;
     fx_output_set(CRS_OUT_CLEAN(s), 1);            /* Options > Output: before the first block, no fade */
 #if FELUCCA_UAC
     ua_off = ua_off_want = (uint8_t)((s->usb_in ? 0u : UA_OFF_IN) | (CRS_USB48(s) ? 0u : UA_OFF_48));   /* (USB Rate) */
@@ -792,11 +801,12 @@ static void crs_capture(cr_settings_t *s)
     for (i = 0; i < (uint32_t)CRS_NPM * CRS_NPAR; i++)
         s->par[i / CRS_NPAR][i % CRS_NPAR] = cs.par[i / CRS_NPAR][i % CRS_NPAR];
     for (i = 0; i < 3u; i++) {
-        s->midi_en[i] = cs.ch[i] != 0u;
+        s->midi_en[i] = CRS_MEN_BYTE(cs.ch[i] != 0u, cs.note_oct[i]);   /* (bits 1 .. 3: the Note Oct, docs/ABLETON-NOTE.md) */
         if (cs.ch[i])
             s->midi_ch[i] = (uint8_t)(cs.ch[i] - 1u);
     }
-    s->raw_sound = CRS_RAW_BYTE(cs.raw_sound, cs.midi_keys);
+    s->raw_sound = CRS_RAW_BYTE_NOTE(cs.raw_sound, cs.midi_keys, cs.note_part);
+    s->clock_mode = CRS_CLOCK_BYTE(CRS_CLOCK(s), cs.note_remote);   /* (the clock: cr_settings_capture's, from the route) */
     s->loop_sync = cs.loop_len;
     s->loop_quant = cs.loop_quant;
     s->loop_count_in = cs.loop_count_in;
@@ -812,7 +822,7 @@ static void crs_capture(cr_settings_t *s)
                               CRS_VCURVE_OF(cs.vel_curve));   /* (bit 0 reserved since 0.18: the engine picker's roots always play; written
                                                     * as "play", so an older firmware reading this record plays too) */
     s->usb_in = cs.usb_in;
-    s->usb_level = cs.usb_fixed;
+    s->usb_level = (uint8_t)((cs.usb_fixed ? CRS_USB_FIXED : 0u) | (cs.note_audio ? CRS_USB_FOLLOW : 0u));
     s->split_pc = cs.split;
     s->view = (uint8_t)(CRS_VIEW_BYTE(cs.view, cs.view_lock) | (cs.dualcore ? CRS_DC_ON : 0u));
     s->motion = cr_motion;
@@ -1153,8 +1163,13 @@ static void cr_settings_load(void)
     cs.suswin = (uint8_t)CRS_SUSWIN_MS(s);
     for (i = 0; i < (uint32_t)CRS_NPM * CRS_NPAR; i++)
         cs.par[i / CRS_NPAR][i % CRS_NPAR] = s->par[i / CRS_NPAR][i % CRS_NPAR];
-    for (i = 0; i < 3u; i++)
-        cs.ch[i] = (uint8_t)(s->midi_en[i] ? s->midi_ch[i] + 1u : 0u);
+    for (i = 0; i < 3u; i++) {
+        cs.ch[i] = (uint8_t)(CRS_MEN_ON(s, i) ? s->midi_ch[i] + 1u : 0u);
+        cs.note_oct[i] = (int8_t)CRS_NOTE_OCT(s, i);   /* (the Ableton Note Options: docs/ABLETON-NOTE.md) */
+    }
+    cs.note_part = (uint8_t)CRS_NOTE_PART(s);
+    cs.note_audio = (uint8_t)CRS_NOTE_AUDIO(s);
+    cs.note_remote = (uint8_t)CRS_NOTE_REMOTE(s);
     cs.raw_sound = (uint8_t)CRS_RAW(s);
     cs.midi_keys = (uint8_t)(CU_FN_KEYS ? CRS_MIDI_KEYS(s) : 0u);
     cr_route.clock_out = o.clock_out;
@@ -1173,7 +1188,7 @@ static void cr_settings_load(void)
     cs.lock_keep = (uint8_t)((s->loop_rec & CRS_LOCK_KEEP) != 0);
     cs.lock_push = (uint8_t)((s->loop_rec & CRS_LOCK_PUSH) != 0);
     cs.usb_in = s->usb_in;
-    cs.usb_fixed = s->usb_level;
+    cs.usb_fixed = (uint8_t)CRS_USB_LEVEL(s);
     cs.usb48 = (uint8_t)CRS_USB48(s);              /* (a revert, a reset, a restore: cu_usb_apply tells usb.c) */
     cs.names_std = (uint8_t)CRS_NAMES(s);          /* Options > Chord Names (0.20): the names only */
     cs.sixth_up = (uint8_t)CRS_SIXTH(s);           /* Options > 6th with 7th (0.20): the engine has it (cr_settings_apply) */

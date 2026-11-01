@@ -588,7 +588,7 @@ static void t_version(void)
     ok(cr_settings_import(&r, &s, sizeof s) == 1 && !r.usb_in && r.usb_level == CRS_USB_FIXED,
        "USB Record off, USB Level Fixed: kept");
     s.usb_in = 9;
-    s.usb_level = 2;
+    s.usb_level = 4;                               /* (bit 1 is Note Audio since the Note Options: bit 2 is unknown) */
     cr_settings_seal(&s);
     ok(cr_settings_import(&r, &s, sizeof s) == 1 && r.usb_in == 1 && r.usb_level == CRS_USB_MASTER,
        "USB settings out of range: their defaults (Record on, Master)");
@@ -1711,6 +1711,95 @@ static void t_keys_default(void)
        "a downgrade that saved, then 0.25.1 again: the record comes from an older firmware and moves to FM-1 again");
 }
 
+/* The Ableton Note Options (cr_settings.h "The Ableton Note Options", docs/ABLETON-NOTE.md): in spare bits of midi_en[],
+ * raw_sound, usb_level and clock_mode; 0 their defaults, kept by import / apply / capture / the Options save; a code
+ * that is no value takes its default, the byte's other settings kept where they can be */
+static void t_note(void)
+{
+    cr_settings_t d, s, r, back, m;
+    cr_settings_out_t o;
+    int i, zero = 1;
+    cr_settings_defaults(&d);
+    for (i = 0; i < 3; i++)
+        zero &= CRS_NOTE_OCT(&d, i) == 0;
+    ok(zero && CRS_NOTE_PART(&d) == CRS_NOTE_ALL && !CRS_NOTE_AUDIO(&d) && !CRS_NOTE_REMOTE(&d) &&
+       CRS_CLOCK(&d) == CRS_CLOCK_OUT && d.midi_en[0] == 1 && d.midi_en[1] == 1 && d.midi_en[2] == 0 &&
+       d.usb_level == CRS_USB_MASTER, "note: defaults off, the bytes as before (0 in every older record)");
+    /* the octave's three bits: -2 .. +2 both ways */
+    for (i = -2; i <= 2; i++) {
+        s = d;
+        s.midi_en[1] = CRS_MEN_BYTE(1, i);
+        zero = CRS_NOTE_OCT(&s, 1) == i && CRS_MEN_ON(&s, 1) == 1u;
+        if (!zero) break;
+    }
+    ok(zero, "note: Note Oct -2 .. +2 packed and read back, the stream's on kept");
+    /* a record with every Note Option set: import keeps them */
+    s = d;
+    s.midi_en[0] = CRS_MEN_BYTE(1, -2);
+    s.midi_en[1] = CRS_MEN_BYTE(1, 1);
+    s.midi_en[2] = CRS_MEN_BYTE(0, -2);
+    s.raw_sound = CRS_RAW_BYTE_NOTE(1, 5, CRS_NOTE_BASS);
+    s.usb_level = CRS_USB_FIXED | CRS_USB_FOLLOW;
+    s.clock_mode = CRS_CLOCK_BYTE(CRS_CLOCK_IN, 16);
+    cr_settings_seal(&s);
+    ok(cr_settings_import(&r, &s, sizeof s) == 1 && cr_settings_equal(&r, &s), "note: import keeps every Note Option");
+    ok(CRS_NOTE_OCT(&r, 0) == -2 && CRS_NOTE_OCT(&r, 1) == 1 && CRS_NOTE_OCT(&r, 2) == -2 && CRS_MEN_ON(&r, 2) == 0u &&
+       CRS_NOTE_PART(&r) == CRS_NOTE_BASS && CRS_RAW(&r) == 1u && CRS_MIDI_KEYS(&r) == 5u && CRS_NOTE_AUDIO(&r) &&
+       CRS_USB_LEVEL(&r) == CRS_USB_FIXED && CRS_CLOCK(&r) == CRS_CLOCK_IN && CRS_NOTE_REMOTE(&r) == 16u,
+       "note: the values read back, the bytes' other settings (MIDI on, Raw Chord Sound, MIDI Keys, Fixed, In) too");
+    /* apply gives the route its plain values; capture keeps the Note bits */
+    cr_init(&C, &OUT);
+    cr_tick(&C, 1);
+    cr_settings_apply(&s, &C, &o);
+    ok(o.midi_en[0] == 1 && o.midi_en[1] == 1 && o.midi_en[2] == 0 && o.clock_in && !o.clock_out &&
+       C.stream_on[CR_STREAM_RAW], "note: apply: MIDI on 0 / 1 per stream, MIDI Clock In, RAW on (Raw Chord Sound)");
+    back = s;
+    cr_settings_capture(&back, &C, &o);
+    ok(cr_settings_equal(&back, &s), "note: capture(apply(s)) == s with the Note Options set");
+    o.clock_in = 0; o.clock_out = 1; o.midi_en[1] = 0;
+    cr_settings_capture(&back, &C, &o);
+    ok(CRS_CLOCK(&back) == CRS_CLOCK_OUT && CRS_NOTE_REMOTE(&back) == 16u && !CRS_MEN_ON(&back, 1) &&
+       CRS_NOTE_OCT(&back, 1) == 1, "note: capture: the clock and a stream's MIDI change, Start/Stop and Oct stay");
+    /* the Options save (cr_settings_auto) carries them: they are Options */
+    m = d;
+    cr_settings_auto(&m, &s);
+    ok(m.midi_en[0] == s.midi_en[0] && m.raw_sound == s.raw_sound && m.usb_level == s.usb_level &&
+       m.clock_mode == s.clock_mode, "note: automatic (stored by themselves, as the Options are)");
+    /* codes that are no value */
+    s = d;
+    s.midi_en[0] = (uint8_t)(1u | (3u << 1));      /* +3: no octave */
+    s.midi_en[1] = (uint8_t)(1u | (4u << 1));      /* -4 */
+    s.midi_en[2] = 0x10u;                          /* an unknown bit */
+    cr_settings_seal(&s);
+    ok(cr_settings_import(&r, &s, sizeof s) == 1 && r.midi_en[0] == 1 && r.midi_en[1] == 1 && r.midi_en[2] == d.midi_en[2],
+       "note: Note Oct +3 / -4: 0, the stream's MIDI kept; an unknown bit: the byte's default");
+    s = d;
+    s.clock_mode = CRS_CLOCK_BYTE(CRS_CLOCK_OFF, 17);
+    cr_settings_seal(&s);
+    ok(cr_settings_import(&r, &s, sizeof s) == 1 && r.clock_mode == CRS_CLOCK_OFF,
+       "note: Start/Stop ch 17: Off, MIDI Clock Off kept");
+    s.clock_mode = (uint8_t)(0x80u | CRS_CLOCK_IN);
+    cr_settings_seal(&s);
+    ok(cr_settings_import(&r, &s, sizeof s) == 1 && r.clock_mode == d.clock_mode, "note: clock_mode bit 7: the default");
+    s.clock_mode = 3u;
+    cr_settings_seal(&s);
+    ok(cr_settings_import(&r, &s, sizeof s) == 1 && r.clock_mode == d.clock_mode, "note: MIDI Clock 3: the default");
+    s = d;
+    s.raw_sound = (uint8_t)(CRS_RAW_BYTE_NOTE(1, 0, CRS_NOTE_RAW) | (17u << 1));   /* MIDI Keys ch 17 */
+    cr_settings_seal(&s);
+    ok(cr_settings_import(&r, &s, sizeof s) == 1 && CRS_MIDI_KEYS(&r) == 0u && CRS_RAW(&r) == 1u &&
+       CRS_NOTE_PART(&r) == CRS_NOTE_RAW, "note: MIDI Keys ch 17: Off, Raw Chord Sound and Part to Note kept");
+    /* an older firmware (modelled from its checks): each byte with a Note bit is out of its range there, so it reads
+     * that byte's default and nothing else */
+    s = d;
+    s.midi_en[0] = CRS_MEN_BYTE(1, 1);
+    s.clock_mode = CRS_CLOCK_BYTE(CRS_CLOCK_OUT, 3);
+    s.usb_level = CRS_USB_FOLLOW;
+    s.raw_sound = CRS_RAW_BYTE_NOTE(0, 0, CRS_NOTE_CHORDS);
+    ok(s.midi_en[0] > 1u && s.clock_mode > CRS_CLOCK_IN && s.usb_level > CRS_USB_FIXED && s.raw_sound > 0x3Fu,
+       "note: 0.28 and older read those bytes as out of range: their defaults (MIDI on, Clock Out, Master, Raw off)");
+}
+
 int main(void)
 {
     t_auto();
@@ -1730,6 +1819,7 @@ int main(void)
     t_touch();
     t_snap();
     t_solfege();
+    t_note();
     printf("cr_settings: %d passed, %d failed\n", passed, failed);
     return failed ? 1 : 0;
 }

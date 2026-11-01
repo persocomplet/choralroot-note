@@ -6,7 +6,7 @@ keys classic                  # (0.25.1: FM-1 is the default; this script was wr
 wait 500
 btn GLO
 wait 100
-knob SELECT +31
+knob SELECT +37               # Calibrate (+6: the Ableton Note entries before Version)
 wait 100
 shot build/emu/test/cr_calib_opt.ppm
 btn OCT+

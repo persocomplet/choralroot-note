@@ -1731,6 +1731,11 @@ Tap **OPT** (printed GLO). One setting fills the screen:
 | **USB Rate** | 44.1 kHz, 44.1 + 48 kHz | 44.1 kHz | 44.1 kHz: the computer records at the FM-1's own rate, as in 0.18. 44.1 + 48 kHz: the computer may also choose 48 kHz, which the FM-1 converts for it; that takes some of its processor time while a recording runs ([USB audio recording](#usb-audio-recording)). The FM-1 leaves USB for a second when you change it |
 | **Dual Core** | Off, On | On (a new unit; an updated unit keeps what it had) | On: the chip's second core shares the work, so more voices sound (below). Takes effect after a restart |
 | **Output** | Classic, Clean | Clean | the last stage before the headphones, the speaker and the USB recording. Classic: as 0.18 and before. Clean: 0.19's, with less distortion on chords and at low MASTER settings; a single note is a little quieter, a full chord with the bass a little louder, and everything sounds 0.7 ms later (its limiter looks ahead). You can switch while you play to compare |
+| **Part to Note** | All, Chords, Bass, Raw Chord | All | Ableton Note ([ABLETON-NOTE.md](ABLETON-NOTE.md)): which part goes out on MIDI; the FM-1 still plays every part. GLO held + BASS steps All, Chords, Bass without the Options |
+| **Note Audio** | Master, Follow Part | Master | what ChoralRoot In's channels 1-2 carry: the master, or the part Part to Note names, dry (before the effects, at half level) |
+| **Note Oct Chords**, **Note Oct Bass** | -2 to +2 octaves | 0 | the chords' (and the raw chord's) / the bass's MIDI notes shifted; the FM-1 sounds as before |
+| **Note Start/Stop** | Off, ch 1 to ch 16 | Off | CC 102 (127, then 0) on that channel when the loop starts or stops playing, for Note's Start/Stop; OCT+ sends it at once (to map it in Note). Not sent by the loop with MIDI Clock In |
+| **Note Setup** | | | OCT+: USB Record On, 44.1 + 48 kHz, USB Level Fixed, the parts' MIDI on, Part to Note Chords, Note Audio Follow, Note Start/Stop ch 16; the line under it says what Note's key and tempo should be (`Note: D Minor · 96 BPM`) |
 | **Version** | | | the firmware's version; the line under it is this FM-1's unit ID (`unit ID A1B2C3D4`, its flash chip's: the same after any install), which tells several FM-1s on one computer apart (`fm1_install.py --unit`, the device manager) |
 | **Calibrate** | | | OCT+ starts the panel calibration ([Calibration](#calibration)) |
 | **Reset Settings** | | | OCT+ twice puts every setting back to its default (below) |
@@ -1883,6 +1888,13 @@ own keys F3 to G5, exactly as the keybed does: the chord keys of the layout you 
 Window, the Full keyboard and its shortcuts. The note's velocity plays the key; CC 120 and CC 123 let every key go;
 other notes and messages on that channel do nothing. It cannot be the MIDI Perform or MIDI Bass channel (those are
 skipped, and setting one of them to it switches MIDI Keys off).
+
+### Ableton Note
+
+Six Options after Output shape the MIDI out and ChoralRoot In for recording the parts one by one into Ableton Note on
+an iPhone or iPad: Part to Note (GLO + BASS), Note Audio, Note Oct Chords and Bass, Note Start/Stop (the loop starts
+and stops Note) and Note Setup. Note takes neither a MIDI clock nor a key over MIDI: the FM-1 starts it, and Note
+Setup's line says the key and the tempo to set there. The whole workflow: [ABLETON-NOTE.md](ABLETON-NOTE.md).
 
 ### USB audio recording
 

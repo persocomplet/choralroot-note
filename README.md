@@ -8,6 +8,10 @@ platform and the engines, and on [choralroot](https://github.com/Quixotic7/chora
 grid version) for the musical engine. Independent of and unaffiliated with Telepathic Instruments
 and M-VAVE.
 
+**This branch, ableton-note (0.28-note1):** 0.28 with six Options for recording the FM-1 into Ableton Note on an
+iPhone or iPad, one part at a time, on the beat and in key: [docs/ABLETON-NOTE.md](docs/ABLETON-NOTE.md) (in French).
+Not an official release; built by `.github/workflows/build-note.yml`.
+
 **The manual:** [docs/MANUAL.md](docs/MANUAL.md) (the first five minutes, every button, knob and Options entry, the
 looper, the sound editor, MIDI and USB, updating and recovery, a quick-reference table).
 

@@ -180,6 +180,34 @@ enum { CRS_USB_MASTER, CRS_USB_FIXED };
 #define CRS_VCURVE_OF(k) ((uint8_t)(((unsigned)(k) & 7u) << 5))
 #define CRS_PICK_AUTO (CRS_OUT_CLASSIC | CRS_USB_48K | CRS_NAMES_STD | CRS_SIXTH_UP | CRS_VCURVE_BITS)   /* the byte's automatic bits (cr_settings_auto) */
 
+/* The Ableton Note Options (docs/ABLETON-NOTE.md): five Options in spare bits of four automatic bytes, the way the
+ * Options above came: 0 is every default and every older record has 0 there, so no version and nothing to migrate.
+ *   midi_en[s] bits 1 .. 3   the stream's Note Oct: its MIDI notes go out -2 .. +2 octaves away (three bits of two's
+ *                            complement; 3, 4 and 5 are not values and read as 0). MIDI out only: the FM-1 sounds as
+ *                            before. The chord octave is written to MAIN and RAW, the bass octave to BASS. Bit 0 stays
+ *                            the stream's MIDI out on
+ *   raw_sound bits 6 .. 7    Part to Note: 0 All (every stream whose MIDI is on, as before), 1 Chords (MAIN alone),
+ *                            2 Bass (BASS alone), 3 Raw (RAW alone): the other streams send no MIDI
+ *   usb_level bit 1          Note Audio: 0 Master on ChoralRoot In 1-2 (as before), 1 Follow: 1-2 carry the part Part
+ *                            to Note names (Chords: the chord pair, Bass: the bass pair; All / Raw: the master)
+ *   clock_mode bits 2 .. 6   Note Start/Stop: 0 Off, 1 .. 16 the channel of CC CRS_NOTE_CC_START (127 then 0), sent when
+ *                            the loop starts or stops playing (not with MIDI Clock In: the loop follows the outside)
+ * A firmware without them finds those bytes out of range and takes its default for the byte (the stream's MIDI out as
+ * by default; Raw Chord Sound and MIDI Keys off; USB Level Master; MIDI Clock Out) until they are set there again */
+#define CRS_MEN_ON(s, i) ((unsigned)(s)->midi_en[i] & 1u)
+#define CRS_NOTE_OCT(s, i) ((int)((((unsigned)(s)->midi_en[i] >> 1) & 7u) ^ 4u) - 4)
+#define CRS_MEN_BYTE(on, oct) ((uint8_t)(((on) ? 1u : 0u) | (((unsigned)(int)(oct) & 7u) << 1)))
+#define CRS_NOTE_PART(s) (((unsigned)(s)->raw_sound >> 6) & 3u)
+#define CRS_RAW_BYTE_NOTE(raw, keys, part) ((uint8_t)(CRS_RAW_BYTE(raw, keys) | (((part) & 3u) << 6)))
+#define CRS_USB_FOLLOW 0x02u
+#define CRS_USB_LEVEL(s) ((unsigned)(s)->usb_level & 1u)
+#define CRS_NOTE_AUDIO(s) (((unsigned)(s)->usb_level & CRS_USB_FOLLOW) ? 1u : 0u)
+#define CRS_CLOCK(s) ((unsigned)(s)->clock_mode & 3u)
+#define CRS_NOTE_REMOTE(s) (((unsigned)(s)->clock_mode >> 2) & 31u)
+#define CRS_CLOCK_BYTE(mode, remote) ((uint8_t)(((mode) & 3u) | (((remote) & 31u) << 2)))
+enum { CRS_NOTE_ALL, CRS_NOTE_CHORDS, CRS_NOTE_BASS, CRS_NOTE_RAW };
+#define CRS_NOTE_CC_START 102u                       /* Note Start/Stop's controller (undefined in the MIDI spec) */
+
 typedef struct {
     /* header (12 bytes) */
     uint32_t magic;                     /* CRS_MAGIC */

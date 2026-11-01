@@ -240,13 +240,9 @@ static void mix_block(int32_t *out, uint32_t n)   /* the audio ISR's block: the 
 #endif
     fx_mix_block(out, n);
 #if FELUCCA_UAC
-    if (ua_stage_on) {   /* USB audio: ChoralRoot In's master pair (fx.c ua_stage), before the click */
-        uint32_t i;
-        for (i = 0; i < n; i++) {
-            ua_stage[i * UA_CAP_CHANNELS] = ua_sat(out[2u * i]);
-            ua_stage[i * UA_CAP_CHANNELS + 1u] = ua_sat(out[2u * i + 1u]);
-        }
-    }
+    if (ua_stage_on)     /* USB audio: ChoralRoot In's master pair (fx.c ua_stage), before the click; or, Options > Note
+                          * Audio = Follow Part, one part's dry pair (cr_out.c cr_usb_pair1) */
+        cr_usb_pair1(ua_stage, out, n);
 #endif
     cr_click_mix(out, n);        /* the metronome / count-in click */
     CR_PROF(CRP_MASTER);         /* the master, the USB tap, the click */

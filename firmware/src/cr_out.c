@@ -20,6 +20,8 @@
  * a sound load asks for with panic_req), midi_event (the parts' MIDI in, below), and the few names upreset.c, main.c
  * and audio.c still use (transport_req, trk_index, drum_track, motion_guard / motion_base_value, chain_defaults). */
 
+#include "cr_settings.h"                     /* (standalone: the Note Options' names, CRS_NOTE_*; docs/ABLETON-NOTE.md) */
+
 #if !FELUCCA_SEQ
 /* ---------------------------------------------- what seq.c provided --- */
 static volatile uint8_t panic_req;               /* bit per part: its notes released (a sound load, M-UPGRADE) */
@@ -249,9 +251,21 @@ typedef struct {
     uint8_t ch[CR_NSTREAM];          /* its MIDI channel 0..15 (Orchid: 1 / 2 / 3) */
     uint8_t clock_out;               /* 24 PPQN MIDI clock out (Options > MIDI Clock: OUT) */
     uint8_t clock_in;                /* follow 0xF8 / FA / FB / FC in (Options > MIDI Clock: IN; nothing is sent) */
+    /* the Ableton Note Options (docs/ABLETON-NOTE.md; cr_ui.c cu_note_route) */
+    uint8_t out_mask;                /* bit per stream: it may go out on MIDI (Part to Note; 7: all, as before) */
+    int8_t oct[CR_NSTREAM];          /* its notes there -2 .. +2 octaves away (Note Oct; the parts sound unshifted) */
+    uint8_t remote;                  /* Note Start/Stop: 0 Off, 1 .. 16 the channel of CC CRS_NOTE_CC_START */
 } cr_route_t;
 /* written by the UI (Options), read by the ISR: a byte each, a change applies to the next note */
-static volatile cr_route_t cr_route = {{CR_PART_CHORD, CR_PART_BASS, CR_NOPART}, {1, 1, 1}, {0, 1, 2}, 0, 0};
+static volatile cr_route_t cr_route = {{CR_PART_CHORD, CR_PART_BASS, CR_NOPART}, {1, 1, 1}, {0, 1, 2}, 0, 0, 7u,
+                                       {0, 0, 0}, 0};
+/* a stream that sends MIDI now: its MIDI out on and Part to Note naming it (or All) */
+#define CR_MOUT(s) (cr_route.midi_en[s] && ((cr_route.out_mask >> (s)) & 1u))
+/* Note Audio (cr_ui.c cu_note_route): what ChoralRoot In's channels 1-2 carry, the master or one part's dry pair
+ * (fx.c ua_stage's channels 3-4 / 5-6, as they are recorded there: before the effects, at half level). The unit's
+ * mix_block shim reads it once a block */
+enum { CR_USB_SRC_MASTER, CR_USB_SRC_CHORD, CR_USB_SRC_BASS };
+static volatile uint8_t cr_usb_src;
 
 static cr_t cr;                                  /* the engine (owned by the audio ISR) */
 static cr_loop_t crl;                            /* the looper (cr_loop.c; the audio ISR's too) */
@@ -266,6 +280,9 @@ static uint8_t cr_ono[CR_NSTREAM][128];
 #define CR_OPART(s, n) ((uint32_t)cr_ono[s][n] >> 5)
 #define CR_OCH_SET(s, n, v) (cr_ono[s][n] = (uint8_t)((cr_ono[s][n] & 0xE0u) | (v)))
 #define CR_OPART_SET(s, n, v) (cr_ono[s][n] = (uint8_t)((cr_ono[s][n] & 31u) | (v) << 5))
+/* each note a stream sent on MIDI: the note number it went out as (Note Oct shifts it): its note-off and its
+ * polyphonic aftertouch go to that one, whatever the octave is set to meanwhile. Valid while CR_OCH(s, n) */
+static uint8_t cr_osent[CR_NSTREAM][128];
 static uint32_t cr_now_ms, cr_ms_rem;            /* the engine clock: audio samples -> ms */
 static uint32_t cr_clk_acc;                      /* MIDI clock: samples x bpm x 24 since the last pulse */
 static volatile uint16_t cr_out_bpm = 120;       /* the tempo the clock pulses at (the UI sets it with the engine's) */
@@ -298,7 +315,7 @@ static void cr_smk_wheel_block(uint32_t n)
             cr_mbend(p);
         }
         for (s = CR_STREAM_MAIN; s <= CR_STREAM_BASS; s++)
-            if (cr_route.midi_en[s])
+            if (CR_MOUT(s))
                 cr_midi(0xE0u | (cr_route.ch[s] & 15u), (uint32_t)(b + 8192) & 0x7Fu, (uint32_t)(b + 8192) >> 7);
     }
     if (m != modw_was) {
@@ -306,7 +323,7 @@ static void cr_smk_wheel_block(uint32_t n)
         for (p = 0; p < 2u; p++)
             mod_midi(&trk[p], 0xB0u, 1u, m);
         for (s = CR_STREAM_MAIN; s <= CR_STREAM_BASS; s++)
-            if (cr_route.midi_en[s])
+            if (CR_MOUT(s))
                 cr_midi(0xB0u | (cr_route.ch[s] & 15u), 1u, m);
         if (!m) {                                /* the vibrato over: the bends as they are */
             ph = 0;
@@ -396,10 +413,19 @@ static void cr_cb_note_on(void *ud, cr_stream_t s, uint8_t note, uint8_t vel)
         trk_note_on(&trk[p], cr_tr_note(p, note), vel);
         CR_OPART_SET(s, note, p + 1u);
     }
-    if (cr_route.midi_en[s]) {
+    if (CR_MOUT(s)) {
         uint32_t ch = cr_route.ch[s] & 15u;
-        cr_midi(0x90u | ch, note, vel ? vel : 1u);
-        CR_OCH_SET(s, note, ch + 1u);
+        int32_t m = (int32_t)note + 12 * (int32_t)cr_route.oct[s];   /* (Note Oct) */
+        if (CR_OCH(s, note) && (CR_OCH(s, note) - 1u != ch || cr_osent[s][note] != (uint32_t)m))
+            cr_midi(0x80u | (CR_OCH(s, note) - 1u), cr_osent[s][note], 0);   /* (struck again since a change of
+                                                   * channel or octave: the note it went out as ends there) */
+        if (m >= 0 && m <= 127) {
+            cr_midi(0x90u | ch, (uint32_t)m, vel ? vel : 1u);
+            CR_OCH_SET(s, note, ch + 1u);
+            cr_osent[s][note] = (uint8_t)m;
+        } else {
+            CR_OCH_SET(s, note, 0u);             /* (shifted off the keyboard: not sent, nothing to end) */
+        }
     }
     cr_out_notes++;
 }
@@ -420,7 +446,7 @@ static void cr_cb_note_off(void *ud, cr_stream_t s, uint8_t note)
         CR_OPART_SET(s, note, 0u);
     }
     if (CR_OCH(s, note)) {
-        cr_midi(0x80u | (CR_OCH(s, note) - 1u), note, 0);
+        cr_midi(0x80u | (CR_OCH(s, note) - 1u), cr_osent[s][note], 0);   /* (as it went out: Note Oct) */
         CR_OCH_SET(s, note, 0u);
     }
 }
@@ -479,7 +505,7 @@ static void cr_smk_pedal_block(void)
                     cr_mpedal_up(p);
         }
         for (s = CR_STREAM_MAIN; s <= CR_STREAM_BASS; s++)
-            if (cr_route.midi_en[s])
+            if (CR_MOUT(s))
                 cr_midi(0xB0u | (cr_route.ch[s] & 15u), 64u, on ? 127u : 0u);
     }
     if (x != expr_was) {
@@ -487,7 +513,7 @@ static void cr_smk_pedal_block(void)
         for (p = 0; p < 2u; p++)
             mod_midi(&trk[p], 0xB0u, 11u, x);
         for (s = CR_STREAM_MAIN; s <= CR_STREAM_BASS; s++)
-            if (cr_route.midi_en[s])
+            if (CR_MOUT(s))
                 cr_midi(0xB0u | (cr_route.ch[s] & 15u), 11u, x);
     }
 }
@@ -502,13 +528,14 @@ static void cr_touch_at(uint32_t v)
     mod_midi(&trk[0], 0xD0u, v, 0);
     mod_midi(&trk[1], 0xD0u, v, 0);
     for (s = 0; s < 2u; s++) {
-        if (!cr_route.midi_en[s])
+        if (!CR_MOUT(s))
             continue;
         if (cr_touch_mode == CR_TOUCH_VEL_POLY) {   /* Vel + Poly AT: each sounding note's, on the channel its note-on
-                                                     * used (one value: the chord is one finger's) */
+                                                     * used (one value: the chord is one finger's), on the note it
+                                                     * went out as (Note Oct) */
             for (n = 0; n < 128u; n++)
                 if (CR_OCH(s, n))
-                    cr_midi(0xA0u | (CR_OCH(s, n) - 1u), n, v);
+                    cr_midi(0xA0u | (CR_OCH(s, n) - 1u), cr_osent[s][n], v);
         } else {
             cr_midi(0xD0u | (cr_route.ch[s] & 15u), v, 0);
         }
@@ -865,6 +892,70 @@ static void cr_out_init(void)                    /* power-on (the audio ISR may 
 static uint8_t cr_rt_was;
 static volatile uint32_t cr_rt_n;
 static volatile uint8_t cr_rt_last;
+static volatile uint32_t cr_note_rt_n;           /* Note Start/Stop presses sent (the tests, the emulator's trace) */
+static volatile uint8_t cr_note_press_req;       /* the UI: one more press asked (Options > Note Start/Stop, OCT+: what
+                                                  * Note's MIDI mapping learns, the loop needing no take) .. */
+static uint8_t cr_note_press_done;               /* .. and the ISR's count of them */
+static void cr_note_press(void)                  /* Note Start/Stop: a button's press and release on its channel */
+{
+    uint32_t ch = (uint32_t)(cr_route.remote - 1u) & 15u;
+    cr_midi(0xB0u | ch, CRS_NOTE_CC_START, 127u);
+    cr_midi(0xB0u | ch, CRS_NOTE_CC_START, 0u);
+    cr_note_rt_n++;
+}
+
+/* the loop started or stopped playing (once a block, after its tick): MIDI start / stop (Options > MIDI Clock = Out)
+ * and Ableton Note's Start/Stop controller (Options > Note Start/Stop) */
+static void cr_rt_poll(void)
+{
+    if ((crl.state == CRL_PLAYING) != cr_rt_was) {
+        cr_rt_was = crl.state == CRL_PLAYING;
+        if (cr_route.clock_out && !cr_route.clock_in) {   /* USB MIDI CIN 0x0F: a single-byte system real-time message */
+            cr_rt_last = cr_rt_was ? 0xFAu : 0xFCu;
+            if (cr_rt_was)
+                cr_clk_acc = 0;                  /* the pulses start with it */
+            midi_out_event(0x0Fu | (uint32_t)cr_rt_last << 8);
+            cr_rt_n++;
+        }
+        if (cr_route.remote && !cr_route.clock_in) {   /* Note Start/Stop (docs/ABLETON-NOTE.md): Ableton Note takes no
+                                                         * MIDI clock and no start; its Start/Stop mapped to this
+                                                         * controller toggles its transport, a press and a release
+                                                         * here, as a button sends them. Not with MIDI Clock In: the
+                                                         * loop follows the outside then (a bridge from Note's Link),
+                                                         * and a press would stop what started it */
+            cr_note_press();
+        }
+    }
+    if (cr_note_press_req != cr_note_press_done) {   /* asked by hand (Options > Note Start/Stop, OCT+): sent whatever
+                                                     * the clock, as a mapping is learnt */
+        cr_note_press_done = cr_note_press_req;
+        if (cr_route.remote)
+            cr_note_press();
+    }
+}
+
+#if defined(FX_UA_STAGE) && FX_UA_STAGE
+/* ChoralRoot In's first pair for the block (the unit's mix_block shim, after fx.c staged the part pairs and before the
+ * click): the master (out, the chain's output), or with Options > Note Audio = Follow Part (docs/ABLETON-NOTE.md) the
+ * dry pair of the part Part to Note names, channels 3-4 (CHORD) or 5-6 (BASS) copied over, in step with the master
+ * (fx.c ua_parts_late already lined them up) */
+static void cr_usb_pair1(int16_t *st, const int32_t *out, uint32_t n)
+{
+    uint32_t i, src = cr_usb_src;
+    if (src == CR_USB_SRC_MASTER) {
+        for (i = 0; i < n; i++) {
+            st[i * UA_CAP_CHANNELS] = ua_sat(out[2u * i]);
+            st[i * UA_CAP_CHANNELS + 1u] = ua_sat(out[2u * i + 1u]);
+        }
+    } else {
+        uint32_t k = src == CR_USB_SRC_BASS ? 4u : 2u;
+        for (i = 0; i < n; i++) {
+            st[i * UA_CAP_CHANNELS] = st[i * UA_CAP_CHANNELS + k];
+            st[i * UA_CAP_CHANNELS + 1u] = st[i * UA_CAP_CHANNELS + k + 1u];
+        }
+    }
+}
+#endif
 
 /* the audio ISR, once per CTL-sample block, before the block renders: input, the scheduler, the clock */
 static void cr_audio_block(uint32_t n)
@@ -892,16 +983,7 @@ static void cr_audio_block(uint32_t n)
     cr_loop_tick(&crl, &cr, cr_now_ms);          /* the loop's playback and capture, the click */
     if (crl_stage_busy == 2u && !crl.next_on)
         crl_stage_busy = 0;
-    if ((crl.state == CRL_PLAYING) != cr_rt_was) {
-        cr_rt_was = crl.state == CRL_PLAYING;
-        if (cr_route.clock_out && !cr_route.clock_in) {   /* USB MIDI CIN 0x0F: a single-byte system real-time message */
-            cr_rt_last = cr_rt_was ? 0xFAu : 0xFCu;
-            if (cr_rt_was)
-                cr_clk_acc = 0;                  /* the pulses start with it */
-            midi_out_event(0x0Fu | (uint32_t)cr_rt_last << 8);
-            cr_rt_n++;
-        }
-    }
+    cr_rt_poll();                                /* the loop's start / stop: MIDI, Ableton Note */
     if (cr_route.clock_out && !cr_route.clock_in) {   /* 24 PPQN: a pulse every FS * 60 / (bpm * 24) samples */
         cr_clk_acc += n * (uint32_t)cr_out_bpm * 24u;
         while (cr_clk_acc >= FS * 60u) {

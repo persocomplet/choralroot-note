@@ -1,0 +1,74 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# ChoralRoot x Ableton Note (docs/ABLETON-NOTE.md): build the installable package on GitHub's runner, for a fork or a
+# copy of this repository. JieLi's toolchain is only on JieLi's own server, so the package is built here rather than on a
+# computer without it. The same steps as The Firmware Hub's shared workflow (zvenson/fm1-build, the one release.yml
+# uses) and tools/hub_build.sh, without the signing and the release.
+#   push to the branch ableton-note, or Actions > build-note > Run workflow (the version, e.g. 0.28-note1)
+# The result: the run's artifact "choralroot-note" with choralroot-VERSION.fwsc (the standard package, both cores),
+# choralroot-VERSION-1core.fwsc (the single-core fallback, docs/DUALCORE.md), their apps, SHA256SUMS and the licences.
+# Install with tools/fm1_install.py (README "From the command line"); the web installer offers only its own releases.
+name: build-note
+
+on:
+  push:
+    branches: [ableton-note]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version string, X.Y-suffix (the FM-1 shows ChoralRoot X.Y-suffix)"
+        required: false
+        default: "0.28-note1"
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-note-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      VERSION: ${{ inputs.version || '0.28-note1' }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683   # v4.2.2
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065   # v5.6.0
+        with:
+          python-version: '3.12'
+
+      - name: JieLi Linux toolchain (pkgman.jieliapp.com)
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.jieli
+          curl -fL --retry 3 https://pkgman.jieliapp.com/s/linux-toolchain | tar -xJ -C ~/.jieli
+          TC="$(ls -d ~/.jieli/jieli-linux-toolchains-* | sort | tail -1)"
+          ln -sfn "$(basename "$TC")" ~/.jieli/toolchain
+          echo "JIELI_TOOLCHAIN=$HOME/.jieli/toolchain" >> "$GITHUB_ENV"
+          echo "toolchain: $(basename "$TC")"
+
+      - name: Build (tools/hub_build.sh, as the releases are built)
+        shell: bash
+        run: bash tools/hub_build.sh "$VERSION"
+
+      - name: The Note Options' host tests (on the headers the build generated)
+        run: |
+          set -euo pipefail
+          mkdir -p build/host
+          cc -std=c11 -Wall -Wextra -Werror -Wno-unused-variable -pedantic -O2 -o build/host/cr_settings_test \
+              tests/cr_settings_test.c firmware/src/cr_settings.c firmware/src/cr_engine.c
+          ./build/host/cr_settings_test | tail -1
+          cc -std=c99 -O2 -w -U_FORTIFY_SOURCE -Ibuild/gen -Ifirmware/src -Itests -o build/host/cr_note_test \
+              tests/cr_note_test.c -lm
+          ./build/host/cr_note_test | tail -1
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02   # v4.6.2
+        with:
+          name: choralroot-note
+          path: build/release-${{ env.VERSION }}/
+          if-no-files-found: error
